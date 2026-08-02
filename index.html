@@ -1187,16 +1187,26 @@
                 'Pallet Serial', 'Received Department', 'Production Floor', 'Item ID'
             ];
 
-            // ---- DISPLAY COLUMNS (only these 7 appear in the table) ----
+            // ---- DISPLAY COLUMNS (new order: Pallet Serial, Model Number, Boxes, Location, Date, Time) ----
+            // We'll use these column keys for data mapping, and override header text for "Placement Date" to "Date"
             const DISPLAY_COLUMNS = [
-                'Location',
+                'Pallet Serial',
                 'Model Number',
                 'Boxes',
-                'Placed By',
-                'Placement Date',
-                'Placement Time',
-                'Pallet Serial'
+                'Location',
+                'Placement Date',  // will show as "Date"
+                'Placement Time'
             ];
+
+            // Map for custom header labels
+            const HEADER_LABELS = {
+                'Pallet Serial': 'Pallet Serial',
+                'Model Number': 'Model Number',
+                'Boxes': 'Boxes',
+                'Location': 'Location',
+                'Placement Date': 'Date',
+                'Placement Time': 'Placement Time'
+            };
 
             // ---- helpers ----
             function normalize(str) {
@@ -1395,12 +1405,14 @@
                 const end = Math.min(start + pageSize, total);
                 const pageData = filteredData.slice(start, end);
 
+                // Build header only once
                 if (tableHead.children.length === 0) {
                     const tr = document.createElement('tr');
                     DISPLAY_COLUMNS.forEach(col => {
                         const th = document.createElement('th');
-                        th.textContent = col;
-                        th.dataset.col = col;
+                        // Use custom header label
+                        th.textContent = HEADER_LABELS[col] || col;
+                        th.dataset.col = col; // keep original key for sorting
                         const icon = document.createElement('span');
                         icon.className = 'sort-icon';
                         icon.innerHTML =
@@ -1425,6 +1437,7 @@
                     tableHead.appendChild(tr);
                 }
 
+                // Update sort indicators
                 document.querySelectorAll('#tableHead th').forEach(th => {
                     th.classList.remove('sorted-asc', 'sorted-desc');
                     if (th.dataset.col === sortKey) {
@@ -1473,12 +1486,11 @@
                 const model = row['Model Number'] || 'N/A';
                 detailTitle.textContent = `📦 ${model}`;
 
-                // Build body: Pallet Serial first, then Location, then rest
+                // Order: Pallet Serial, Location, then the rest (excluding those two)
                 const priorityFields = ['Pallet Serial', 'Location'];
                 const otherFields = ALL_COLUMNS.filter(col => !priorityFields.includes(col));
 
                 let html = '';
-                // First show Pallet Serial and Location
                 priorityFields.forEach(col => {
                     let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
                     const isEmpty = val === '';
@@ -1487,7 +1499,6 @@
                         <span class="value${isEmpty ? ' empty' : ''}">${isEmpty ? '—' : String(val)}</span>
                     </div>`;
                 });
-                // Then show the rest
                 otherFields.forEach(col => {
                     let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
                     if (col === 'Valuation' && val !== '') {
@@ -1534,9 +1545,13 @@
                     alert('No data to export.');
                     return;
                 }
+                // Export using the same order as DISPLAY_COLUMNS, with header labels
                 const dataToExport = filteredData.map(row => {
                     const obj = {};
-                    DISPLAY_COLUMNS.forEach(col => { obj[col] = row[col] !== undefined ? row[col] : ''; });
+                    DISPLAY_COLUMNS.forEach(col => {
+                        const label = HEADER_LABELS[col] || col;
+                        obj[label] = row[col] !== undefined ? row[col] : '';
+                    });
                     return obj;
                 });
 
@@ -1553,8 +1568,9 @@
                         '</style></head><body>';
                     html += `<h2>Warehouse Inventory — ${new Date().toLocaleString()}</h2>`;
                     html += `<p>${filteredData.length} records</p>`;
+                    const headers = DISPLAY_COLUMNS.map(col => HEADER_LABELS[col] || col);
                     html +=
-                        `<table><thead><tr>${DISPLAY_COLUMNS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+                        `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
                     filteredData.forEach(row => {
                         html += '<tr>' + DISPLAY_COLUMNS.map(c => `<td>${String(row[c]||'')}</td>`).join('') +
                             '</tr>';
@@ -1569,6 +1585,7 @@
                     return;
                 }
 
+                // Excel/CSV
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.json_to_sheet(dataToExport);
                 XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
@@ -1601,7 +1618,6 @@
 
             // ---- PWA install ----
             function initPWA() {
-                // Detect install prompt
                 window.addEventListener('beforeinstallprompt', function(e) {
                     e.preventDefault();
                     deferredPrompt = e;

@@ -1023,7 +1023,7 @@
             color: var(--color-text);
             border-radius: var(--radius-sm);
             box-shadow: var(--shadow-lg);
-            min-width: 150px;
+            min-width: 180px;
             padding: 4px 0;
             z-index: 50;
             border: 1px solid var(--color-border);
@@ -1056,6 +1056,11 @@
             width: 14px;
             height: 14px;
             opacity: 0.5;
+        }
+        .export-menu .menu-divider {
+            height: 1px;
+            background: var(--color-border-light);
+            margin: 4px 12px;
         }
 
         /* ================================================================
@@ -1492,11 +1497,6 @@
                 <span>Out</span>
                 <span id="outCountBadge" style="background:rgba(255,255,255,0.2);padding:0 6px;border-radius:12px;font-size:0.6rem;font-weight:700;display:none;">0</span>
             </button>
-            <button class="btn btn-primary" id="importBtn" aria-label="Import data">
-                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <span>Import</span>
-            </button>
-            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" aria-label="Import file" />
             <button class="btn btn-header" id="toggleFiltersBtn" aria-label="Toggle filters">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 13 10 21 14 18 14 13 22 3"/></svg>
                 <span>Filters</span>
@@ -1515,17 +1515,26 @@
                     <span>Export</span>
                 </button>
                 <div class="export-menu" id="exportMenu" role="menu">
-                    <button data-format="excel" role="menuitem">
-                        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="16" x2="16" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="20" x2="13" y2="20"/></svg>
-                        Excel (.xlsx)
+                    <button data-format="inventory" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        Inventory Report
                     </button>
-                    <button data-format="csv" role="menuitem">
-                        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="16" x2="16" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                        CSV
+                    <button data-format="highlighted" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        Highlighted Report
                     </button>
+                    <button data-format="outlog" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+                        Out Entries Report
+                    </button>
+                    <button data-format="summary" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                        Summary Log
+                    </button>
+                    <div class="menu-divider"></div>
                     <button data-format="print" role="menuitem">
                         <svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M18 9H6"/><path d="M18 13v6H6v-6"/><rect x="8" y="15" width="8" height="2"/></svg>
-                        Print
+                        Print View
                     </button>
                 </div>
             </div>
@@ -1568,7 +1577,6 @@
         <!-- FILTERS -->
         <section class="filters-panel no-print" id="filtersSection">
             <div class="filters-grid">
-                <!-- Google Sheets group hidden but kept for structure -->
                 <div class="filter-group google-sheet-group" style="display:none;"></div>
 
                 <div class="filter-group location-range-group">
@@ -1744,8 +1752,8 @@
 
     <script>
         // ================================================================
-        //  WAREHOUSE INVENTORY + PICKER SYSTEM — v8.3
-        //  Google Sheets sync via refresh button (backend in code)
+        //  WAREHOUSE INVENTORY + PICKER SYSTEM — v9.0
+        //  Google Sheets sync · Full reporting · No import
         // ================================================================
 
         (function() {
@@ -1754,8 +1762,6 @@
             // =============================================================
             // 1. DOM REFS
             // =============================================================
-            const fileInput = document.getElementById('fileInput');
-            const importBtn = document.getElementById('importBtn');
             const refreshBtn = document.getElementById('refreshBtn');
             const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
             const clearFiltersBtn = document.getElementById('clearFiltersBtn');
@@ -2001,9 +2007,6 @@
                     showHighlightedOnly = false;
                     updateHighlightBtnState();
                     selectedUIDs.clear();
-                    // Preserve out log? No, out log stays separate.
-                    // But we need to keep outData as is, and remove out items from allData.
-                    // However allData is being replaced, so we need to filter out items that are in outData.
                     const outUIDs = new Set(outData.map(item => item._uid));
 
                     const newData = json.map((row) => {
@@ -2015,7 +2018,6 @@
                         return obj;
                     });
 
-                    // Remove items that are already out
                     allData = newData.filter(row => !outUIDs.has(row._uid));
 
                     searchTerm = '';
@@ -2114,75 +2116,7 @@
             }
 
             // =============================================================
-            // 8. IMPORT
-            // =============================================================
-            function importFile(file) {
-                const ext = file.name.split('.').pop().toLowerCase();
-                if (!['xlsx', 'xls', 'csv'].includes(ext)) {
-                    showToast('Unsupported file type. Please use .xlsx, .xls, or .csv.', 'error');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const json = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-
-                        if (!json || json.length === 0) {
-                            showToast('No data found in file.', 'error');
-                            loadingOverlay.classList.remove('active');
-                            return;
-                        }
-
-                        highlightedSet.clear();
-                        showHighlightedOnly = false;
-                        updateHighlightBtnState();
-                        selectedUIDs.clear();
-                        const outUIDs = new Set(outData.map(item => item._uid));
-
-                        const newData = json.map((row) => {
-                            const obj = {};
-                            ALL_COLUMNS.forEach(col => {
-                                obj[col] = row[col] !== undefined && row[col] !== null ? row[col] :
-                                '';
-                            });
-                            obj._uid = generateUid();
-                            return obj;
-                        });
-
-                        allData = newData.filter(row => !outUIDs.has(row._uid));
-                        searchTerm = '';
-                        searchInput.value = '';
-                        sortKey = null;
-                        sortDir = 'asc';
-                        currentPage = 1;
-                        clearFilterInputs();
-                        locationRangeFilter = [];
-                        locationRangeInput.value = '';
-
-                        applyFiltersAndRender();
-                        renderOutLog();
-                        updateTabBadges();
-                        showToast(`Successfully imported ${allData.length} records.`, 'success');
-                        loadingOverlay.classList.remove('active');
-                    } catch (err) {
-                        loadingOverlay.classList.remove('active');
-                        showToast('Error reading file: ' + err.message, 'error');
-                    }
-                };
-                reader.onerror = function() {
-                    loadingOverlay.classList.remove('active');
-                    showToast('Failed to read file.', 'error');
-                };
-                loadingOverlay.classList.add('active');
-                reader.readAsArrayBuffer(file);
-            }
-
-            // =============================================================
-            // 9. FILTERING & SEARCH
+            // 8. FILTERING & SEARCH
             // =============================================================
             function matchesSearch(row, term) {
                 if (!term) return true;
@@ -2318,7 +2252,7 @@
             }
 
             // =============================================================
-            // 10. SUMMARY
+            // 9. SUMMARY
             // =============================================================
             function updateSummary() {
                 const total = filteredData.length;
@@ -2370,7 +2304,7 @@
             }
 
             // =============================================================
-            // 11. RENDER TABLE
+            // 10. RENDER TABLE
             // =============================================================
             function buildHeader() {
                 if (tableHead.children.length > 0) return;
@@ -2567,7 +2501,11 @@
                 const headerChk = document.querySelector('#tableHead th:first-child .row-checkbox');
                 if (!headerChk) return;
                 const rows = tableBody.querySelectorAll('tr');
-                const checkboxes = rows.map(tr => tr.querySelector('.row-checkbox')).filter(cb => cb);
+                const checkboxes = [];
+                rows.forEach(tr => {
+                    const cb = tr.querySelector('.row-checkbox');
+                    if (cb) checkboxes.push(cb);
+                });
                 if (checkboxes.length === 0) {
                     headerChk.checked = false;
                     headerChk.indeterminate = false;
@@ -2587,7 +2525,7 @@
             }
 
             // =============================================================
-            // 12. HIGHLIGHT
+            // 11. HIGHLIGHT
             // =============================================================
             function toggleHighlightAndUpdate(uid, rowElement) {
                 if (highlightedSet.has(uid)) {
@@ -2663,7 +2601,7 @@
             }
 
             // =============================================================
-            // 13. OUT FUNCTIONALITY
+            // 12. OUT FUNCTIONALITY
             // =============================================================
             function performOut() {
                 if (selectedUIDs.size === 0) {
@@ -2710,7 +2648,6 @@
                 outData = outData.concat(outEntries);
                 saveOutLog();
 
-                // Remove from allData
                 const toOutUIDs = new Set(toOut.map(r => r._uid));
                 allData = allData.filter(r => !toOutUIDs.has(r._uid));
 
@@ -2730,7 +2667,6 @@
                     return;
                 }
                 const item = outData[index];
-                // Check if it already exists in allData
                 const exists = allData.some(row => row._uid === item._uid);
                 if (!exists) {
                     const newRow = { ...item };
@@ -2762,7 +2698,7 @@
             }
 
             // =============================================================
-            // 14. OUT LOG PERSISTENCE
+            // 13. OUT LOG PERSISTENCE
             // =============================================================
             function saveOutLog() {
                 try {
@@ -2778,7 +2714,7 @@
             }
 
             // =============================================================
-            // 15. RENDER OUT LOG
+            // 14. RENDER OUT LOG
             // =============================================================
             function renderOutLog() {
                 const total = outData.length;
@@ -2877,7 +2813,7 @@
             }
 
             // =============================================================
-            // 16. TABS
+            // 15. TABS
             // =============================================================
             function switchTab(tab) {
                 const isInventory = tab === 'inventory';
@@ -2896,104 +2832,196 @@
             }
 
             // =============================================================
-            // 17. EXPORT
+            // 16. EXPORT - Full Reporting
             // =============================================================
             function exportData(format) {
-                let dataToExport = filteredData;
+                let dataToExport = [];
+                let sheetName = 'Report';
+                let filename = 'report';
+
+                switch (format) {
+                    case 'inventory':
+                        dataToExport = filteredData.length > 0 ? filteredData : allData;
+                        sheetName = 'Inventory';
+                        filename = 'inventory_report';
+                        break;
+                    case 'highlighted':
+                        dataToExport = allData.filter(row => highlightedSet.has(row._uid));
+                        sheetName = 'Highlighted';
+                        filename = 'highlighted_report';
+                        if (dataToExport.length === 0) {
+                            showToast('No highlighted records to export.', 'warning');
+                            return;
+                        }
+                        break;
+                    case 'outlog':
+                        dataToExport = outData;
+                        sheetName = 'OutEntries';
+                        filename = 'out_entries_report';
+                        if (dataToExport.length === 0) {
+                            showToast('No out entries to export.', 'warning');
+                            return;
+                        }
+                        break;
+                    case 'summary':
+                        // Summary Log - aggregated by model
+                        const summaryData = [];
+                        const modelMap = {};
+                        const allItems = allData.filter(row => {
+                            const outUIDs = new Set(outData.map(item => item._uid));
+                            return !outUIDs.has(row._uid);
+                        });
+                        allItems.forEach(row => {
+                            const model = escapeText(row['Model Number'] || 'Unknown');
+                            if (!modelMap[model]) {
+                                modelMap[model] = { model, boxes: 0, items: 0, valuation: 0, locations: new Set() };
+                            }
+                            modelMap[model].boxes += parseNumber(row['Boxes']);
+                            modelMap[model].items += parseNumber(row['Total Items']);
+                            modelMap[model].valuation += parseNumber(row['Valuation']);
+                            if (row['Location']) modelMap[model].locations.add(escapeText(row['Location']));
+                        });
+                        Object.values(modelMap).forEach(m => {
+                            summaryData.push({
+                                'Model': m.model,
+                                'Total Boxes': m.boxes,
+                                'Total Items': m.items,
+                                'Valuation': m.valuation.toFixed(2),
+                                'Locations': Array.from(m.locations).join(', ')
+                            });
+                        });
+                        // Add summary totals
+                        let totalBoxes = 0,
+                            totalItems = 0,
+                            totalValuation = 0;
+                        allItems.forEach(row => {
+                            totalBoxes += parseNumber(row['Boxes']);
+                            totalItems += parseNumber(row['Total Items']);
+                            totalValuation += parseNumber(row['Valuation']);
+                        });
+                        summaryData.push({
+                            'Model': '=== TOTALS ===',
+                            'Total Boxes': totalBoxes,
+                            'Total Items': totalItems,
+                            'Valuation': totalValuation.toFixed(2),
+                            'Locations': '--'
+                        });
+                        dataToExport = summaryData;
+                        sheetName = 'Summary';
+                        filename = 'summary_log';
+                        if (dataToExport.length <= 1) {
+                            showToast('No data for summary.', 'warning');
+                            return;
+                        }
+                        break;
+                    case 'print':
+                        // Print current view
+                        const win = window.open('', '_blank');
+                        if (!win) {
+                            showToast('Please allow popups for printing.', 'error');
+                            return;
+                        }
+                        let html = '<html><head><title>Warehouse Report</title><style>' +
+                            'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; margin: 0; }' +
+                            'h1 { font-size: 24px; margin-bottom: 4px; }' +
+                            '.sub { color: #555; margin-bottom: 16px; font-size: 14px; }' +
+                            'table { width: 100%; border-collapse: collapse; font-size: 12px; }' +
+                            'th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; white-space: nowrap; }' +
+                            'th { background: #0b1424; color: #fff; font-weight: 600; }' +
+                            'tr.highlight-row { background: #fef9e7; }' +
+                            '.footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; font-size: 10px; color: #888; }' +
+                            '@media print { body { padding: 10px; } th, td { padding: 4px 6px; } }' +
+                            '</style></head><body>';
+                        const printData = filteredData.length > 0 ? filteredData : allData;
+                        html += `<h1>Warehouse Inventory Report</h1>`;
+                        html +=
+                            `<div class="sub">Generated: ${new Date().toLocaleString()} · ${printData.length} records</div>`;
+                        const headers = ['#', 'Pallet', 'Model', 'Boxes', 'Location', 'Date', 'Time'];
+                        html += `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                        printData.forEach((row, idx) => {
+                            const isHl = highlightedSet.has(row._uid);
+                            const cls = isHl ? ' class="highlight-row"' : '';
+                            const vals = [
+                                idx + 1,
+                                escapeText(row['Pallet Serial']),
+                                escapeText(row['Model Number']),
+                                parseNumber(row['Boxes']),
+                                escapeText(row['Location']),
+                                formatShortDate(row['Placement Date']),
+                                escapeText(row['Placement Time'])
+                            ];
+                            html += '<tr' + cls + '>' + vals.map(v => `<td>${v}</td>`).join('') + '</tr>';
+                        });
+                        html += '</tbody></table>';
+                        html += `<div class="footer">Warehouse Inventory System</div>`;
+                        html += '</body></html>';
+                        win.document.write(html);
+                        win.document.close();
+                        setTimeout(() => { win.print(); }, 500);
+                        return;
+                    default:
+                        showToast('Unknown export format.', 'error');
+                        return;
+                }
+
                 if (dataToExport.length === 0) {
                     showToast('No data to export.', 'error');
                     return;
                 }
-                if (showHighlightedOnly) {
-                    dataToExport = dataToExport.filter(row => highlightedSet.has(row._uid));
-                    if (dataToExport.length === 0) {
-                        showToast('No highlighted records to export.', 'warning');
-                        return;
-                    }
-                }
 
-                if (format === 'print') {
-                    const win = window.open('', '_blank');
-                    if (!win) {
-                        showToast('Please allow popups for printing.', 'error');
-                        return;
-                    }
-                    let html = '<html><head><title>Warehouse Inventory</title><style>' +
-                        'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; margin: 0; }' +
-                        'h1 { font-size: 24px; margin-bottom: 4px; }' +
-                        '.sub { color: #555; margin-bottom: 16px; font-size: 14px; }' +
-                        'table { width: 100%; border-collapse: collapse; font-size: 12px; }' +
-                        'th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; white-space: nowrap; }' +
-                        'th { background: #0b1424; color: #fff; font-weight: 600; }' +
-                        'tr.highlight-row { background: #fef9e7; }' +
-                        '.footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; font-size: 10px; color: #888; }' +
-                        '@media print { body { padding: 10px; } th, td { padding: 4px 6px; } }' +
-                        '</style></head><body>';
-                    html += `<h1>Warehouse Inventory Report</h1>`;
-                    html +=
-                        `<div class="sub">Generated: ${new Date().toLocaleString()} · ${dataToExport.length} records</div>`;
-                    const headers = ['#', 'Pallet', 'Model', 'Boxes', 'Location', 'Date', 'Time'];
-                    html += `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
-                    dataToExport.forEach((row, idx) => {
-                        const isHl = highlightedSet.has(row._uid);
-                        const cls = isHl ? ' class="highlight-row"' : '';
-                        const vals = [
-                            idx + 1,
-                            escapeText(row['Pallet Serial']),
-                            escapeText(row['Model Number']),
-                            parseNumber(row['Boxes']),
-                            escapeText(row['Location']),
-                            formatShortDate(row['Placement Date']),
-                            escapeText(row['Placement Time'])
-                        ];
-                        html += '<tr' + cls + '>' + vals.map(v => `<td>${v}</td>`).join('') + '</tr>';
-                    });
-                    html += '</tbody></table>';
-                    html +=
-                    `<div class="footer">Warehouse Inventory System</div>`;
-                    html += '</body></html>';
-                    win.document.write(html);
-                    win.document.close();
-                    setTimeout(() => { win.print(); }, 500);
-                    return;
-                }
-
+                // Build export rows
                 const exportRows = dataToExport.map((row, idx) => {
                     const obj = {};
+                    if (format === 'summary') {
+                        // Summary already has proper keys
+                        Object.keys(row).forEach(key => {
+                            obj[key] = row[key];
+                        });
+                        return obj;
+                    }
                     obj['#'] = idx + 1;
+                    if (format === 'outlog') {
+                        obj['Pallet'] = escapeText(row['Pallet Serial'] || '');
+                        obj['Model'] = escapeText(row['Model Number'] || '');
+                        obj['Boxes'] = parseNumber(row['Boxes']);
+                        obj['Location'] = escapeText(row['Location'] || '');
+                        obj['Out Date'] = escapeText(row._outDate || '');
+                        obj['Out Time'] = escapeText(row._outTime || '');
+                        obj['Picker'] = escapeText(row._outBy || '');
+                        obj['Valuation'] = parseNumber(row['Valuation']).toFixed(2);
+                        return obj;
+                    }
+                    // Inventory or Highlighted
                     DISPLAY_COLUMNS.forEach(col => {
                         if (col === '#') return;
                         const label = HEADER_LABELS[col] || col;
                         let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
-                        if (col === 'Placement Date') {
-                            val = formatShortDate(val);
-                        }
-                        if (typeof val === 'string' && /^[=+\-@]/.test(val)) {
-                            val = "'" + val;
-                        }
+                        if (col === 'Placement Date') val = formatShortDate(val);
+                        if (typeof val === 'string' && /^[=+\-@]/.test(val)) val = "'" + val;
                         obj[label] = val;
                     });
                     obj['⭐ Highlighted'] = highlightedSet.has(row._uid) ? 'Yes' : 'No';
+                    obj['Valuation'] = parseNumber(row['Valuation']).toFixed(2);
+                    obj['Total Items'] = parseNumber(row['Total Items']);
                     return obj;
                 });
 
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.json_to_sheet(exportRows);
-                XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
-                const wbout = XLSX.write(wb, { bookType: format === 'csv' ? 'csv' : 'xlsx', type: 'array' });
-                const blob = new Blob([wbout], { type: format === 'csv' ? 'text/csv' :
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `inventory_export.${format === 'csv' ? 'csv' : 'xlsx'}`;
+                a.download = `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`;
                 a.click();
                 URL.revokeObjectURL(url);
-                showToast(`Exported ${dataToExport.length} records to ${format.toUpperCase()}.`, 'success');
+                showToast(`Exported ${dataToExport.length} records as ${format} report.`, 'success');
             }
 
             // =============================================================
-            // 18. CLEAR FILTERS
+            // 17. CLEAR FILTERS
             // =============================================================
             function clearFilterInputs() {
                 filterLocation.value = '';
@@ -3014,7 +3042,7 @@
             }
 
             // =============================================================
-            // 19. DEBOUNCE
+            // 18. DEBOUNCE
             // =============================================================
             function debounce(fn, ms) {
                 let timer;
@@ -3025,18 +3053,10 @@
             }
 
             // =============================================================
-            // 20. INIT
+            // 19. INIT
             // =============================================================
             function init() {
                 loadOutLog();
-
-                importBtn.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', function(e) {
-                    if (this.files && this.files[0]) {
-                        importFile(this.files[0]);
-                    }
-                    this.value = '';
-                });
 
                 refreshBtn.addEventListener('click', function() {
                     syncGoogleSheet(true);
@@ -3157,20 +3177,7 @@
                     }
                 });
 
-                document.addEventListener('dragover', function(e) { e.preventDefault(); });
-                document.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    const files = e.dataTransfer.files;
-                    if (files && files.length > 0) {
-                        const file = files[0];
-                        const ext = file.name.split('.').pop().toLowerCase();
-                        if (['xlsx', 'xls', 'csv'].includes(ext)) {
-                            importFile(file);
-                        } else {
-                            showToast('Please drop an Excel or CSV file.', 'error');
-                        }
-                    }
-                });
+                // Drag and drop removed (import removed)
 
                 const savedPicker = localStorage.getItem('warehouse_picker_name');
                 if (savedPicker) pickerNameInput.value = savedPicker;
@@ -3181,7 +3188,7 @@
                 // Initial sync on load
                 syncGoogleSheet(true);
 
-                console.log('🏭 Warehouse Inventory v8.3 · Google Sync via Refresh');
+                console.log('🏭 Warehouse Inventory v9.0 · Full Reporting · No Import');
             }
 
             if (document.readyState === 'loading') {

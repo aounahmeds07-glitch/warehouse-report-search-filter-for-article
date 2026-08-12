@@ -1,0 +1,4287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>WareHouse · Inventory System</title>
+
+    <!-- Google Identity Services for OAuth2 -->
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
+
+    <style>
+        /* ================================================================
+           PROFESSIONAL WAREHOUSE INVENTORY SYSTEM
+           Full OAuth2 Google Sheets Sync · Real-time · Admin Oversight
+           ================================================================ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #0a1628;
+            --color-primary-light: #1a2a42;
+            --color-accent: #4f8cff;
+            --color-accent-hover: #6ba3f9;
+            --color-accent-light: #e8effd;
+            --color-bg: #f2f6fc;
+            --color-card: #ffffff;
+            --color-text: #0a1628;
+            --color-text-secondary: #4a5a6e;
+            --color-text-muted: #8a9aa8;
+            --color-border: #dce4ec;
+            --color-border-light: #eef2f7;
+            --color-success: #22c55e;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-out: #7c3aed;
+            --color-out-light: #ede9fe;
+            --color-highlight-bg: #fef9e7;
+            --color-highlight-border: #f59e0b;
+            --color-google: #4285f4;
+            --color-admin: #7c3aed;
+            --color-admin-light: #ede9fe;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-xs: 6px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.16);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --row-height: 36px;
+        }
+
+        html {
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-border-light);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c0cbd8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0b0c0;
+        }
+
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .icon-sm {
+            width: 16px;
+            height: 16px;
+        }
+        .icon-md {
+            width: 20px;
+            height: 20px;
+        }
+        .icon-lg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--color-card);
+            color: var(--color-text);
+            box-shadow: var(--shadow-sm);
+            font-family: var(--font);
+            white-space: nowrap;
+            user-select: none;
+            border: 1px solid transparent;
+            height: 36px;
+        }
+        .btn:hover:not(:disabled) {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(74, 140, 247, 0.3);
+            border-color: var(--color-accent);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+        }
+
+        .btn-google {
+            background: var(--color-google);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(66, 133, 244, 0.3);
+            border-color: var(--color-google);
+        }
+        .btn-google:hover:not(:disabled) {
+            background: #3b78e7;
+            border-color: #3b78e7;
+        }
+
+        .btn-out {
+            background: var(--color-out);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+            border-color: var(--color-out);
+        }
+        .btn-out:hover:not(:disabled) {
+            background: #6d28d9;
+            border-color: #6d28d9;
+        }
+        .btn-out:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+        }
+        .btn-outline:hover:not(:disabled) {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: var(--color-accent-light);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            box-shadow: none;
+            color: var(--color-text-secondary);
+            border-color: transparent;
+        }
+        .btn-ghost:hover:not(:disabled) {
+            background: var(--color-border-light);
+            color: var(--color-text);
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+            height: 34px;
+        }
+        .btn-header:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            transform: none;
+        }
+
+        .btn-success {
+            background: var(--color-success);
+            color: #fff;
+            border-color: var(--color-success);
+        }
+        .btn-success:hover:not(:disabled) {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .btn-danger {
+            background: var(--color-danger);
+            color: #fff;
+            border-color: var(--color-danger);
+        }
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .btn-tab {
+            background: transparent;
+            color: var(--color-text-secondary);
+            border: none;
+            border-radius: 0;
+            padding: 8px 20px 10px 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: none;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            height: auto;
+        }
+        .btn-tab:hover {
+            color: var(--color-text);
+            background: transparent;
+        }
+        .btn-tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+            background: transparent;
+        }
+        .btn-tab .badge-tab {
+            background: var(--color-accent);
+            color: #fff;
+            font-size: 0.5rem;
+            padding: 0 7px;
+            border-radius: 30px;
+            margin-left: 5px;
+            font-weight: 700;
+        }
+        .btn-tab .badge-tab.out-badge {
+            background: var(--color-out);
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            background: var(--color-primary);
+            color: #fff;
+            padding: 6px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .header-left .logo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-left .logo .icon {
+            color: var(--color-accent);
+            width: 22px;
+            height: 22px;
+        }
+        .header-left h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+        .header-left h1 span {
+            color: var(--color-accent);
+        }
+        .header-badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: #b0c8e0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            white-space: nowrap;
+        }
+        .header-badge.highlight-badge {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== LOGIN ===== */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.92);
+            backdrop-filter: blur(16px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            transition: opacity 0.6s ease;
+        }
+        .login-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .login-box {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 40px 44px 36px;
+            max-width: 440px;
+            width: 94%;
+            box-shadow: var(--shadow-xl);
+        }
+        .login-box .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 4px;
+        }
+        .login-box .logo span {
+            color: var(--color-accent);
+        }
+        .login-box .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.82rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .login-box .form-group {
+            margin-bottom: 14px;
+        }
+        .login-box .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-secondary);
+            margin-bottom: 4px;
+        }
+        .login-box .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            background: var(--color-bg);
+            transition: var(--transition);
+            color: var(--color-text);
+            outline: none;
+        }
+        .login-box .form-group input:focus {
+            border-color: var(--color-accent);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(74, 140, 247, 0.12);
+        }
+        .login-box .form-group input::placeholder {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+        }
+        .login-box .login-error {
+            color: var(--color-danger);
+            font-size: 0.72rem;
+            text-align: center;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        .login-box .login-btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 6px;
+            height: 44px;
+        }
+        .login-box .user-hint {
+            font-size: 0.6rem;
+            color: var(--color-text-muted);
+            text-align: center;
+            margin-top: 16px;
+            border-top: 1px solid var(--color-border-light);
+            padding-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px 12px;
+        }
+        .login-box .user-hint span {
+            background: var(--color-bg);
+            padding: 1px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.55rem;
+            color: var(--color-text-secondary);
+        }
+        .login-box .user-hint .admin-hint {
+            background: var(--color-admin-light);
+            color: var(--color-admin);
+        }
+
+        /* Google auth status */
+        .google-auth-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--color-bg);
+            border-radius: var(--radius-sm);
+            margin: 12px 0;
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+        }
+        .google-auth-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .google-auth-status .status-dot.connected {
+            background: var(--color-success);
+        }
+        .google-auth-status .status-dot.disconnected {
+            background: var(--color-danger);
+        }
+        .google-auth-status .status-dot.connecting {
+            background: var(--color-warning);
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+        }
+
+        /* ===== TABS BAR ===== */
+        .tabs-bar {
+            display: flex;
+            gap: 0;
+            padding: 0 24px;
+            background: var(--color-card);
+            border-bottom: 1px solid var(--color-border-light);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tabs-bar .tab-spacer {
+            flex: 1;
+        }
+        .tabs-bar .user-info-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            color: var(--color-text-secondary);
+            padding: 4px 0;
+        }
+        .tabs-bar .user-info-wrap .user-name {
+            font-weight: 600;
+            color: var(--color-text);
+            background: var(--color-accent-light);
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .tabs-bar .user-info-wrap .user-role {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-muted);
+            background: var(--color-bg);
+            padding: 1px 12px;
+            border-radius: 20px;
+        }
+        .tabs-bar .user-info-wrap .user-role.admin-role {
+            background: var(--color-admin-light);
+            color: var(--color-admin);
+        }
+        .tabs-bar .user-info-wrap .logout-btn {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 3px 12px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            transition: var(--transition);
+            font-family: var(--font);
+            height: 26px;
+        }
+        .tabs-bar .user-info-wrap .logout-btn:hover {
+            background: var(--color-danger);
+            color: #fff;
+            border-color: var(--color-danger);
+        }
+        .tabs-bar .user-info-wrap .sync-status {
+            font-size: 0.5rem;
+            color: var(--color-success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tabs-bar .user-info-wrap .sync-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-success);
+            display: inline-block;
+        }
+        .tabs-bar .user-info-wrap .sync-status.syncing .dot {
+            animation: pulse 1s ease-in-out infinite;
+            background: var(--color-warning);
+        }
+        .tabs-bar .user-info-wrap .sync-status.error .dot {
+            background: var(--color-danger);
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            padding: 8px 24px 4px 24px;
+            background: var(--color-card);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+        .search-wrapper {
+            position: relative;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .search-wrapper .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 8px 14px 8px 40px;
+            font-size: 0.85rem;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-bg);
+            transition: var(--transition);
+            font-family: var(--font);
+            color: var(--color-text);
+            outline: none;
+            height: 40px;
+        }
+        #searchInput:focus {
+            border-color: var(--color-accent);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(74, 140, 247, 0.12);
+        }
+        #searchInput::placeholder {
+            color: var(--color-text-muted);
+        }
+        .search-hint {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.5rem;
+            color: var(--color-text-muted);
+            background: var(--color-bg);
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--color-border);
+            pointer-events: none;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+
+        /* ===== FILTERS ===== */
+        .filters-panel {
+            padding: 6px 24px 10px 24px;
+            background: var(--color-card);
+            border-bottom: 1px solid var(--color-border-light);
+            transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+            max-height: 800px;
+            overflow: hidden;
+            opacity: 1;
+        }
+        .filters-panel.collapsed {
+            max-height: 0;
+            padding: 0 24px;
+            opacity: 0;
+            border-bottom: none;
+        }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 6px 12px;
+            align-items: end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .filter-group label {
+            font-size: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-text-secondary);
+        }
+        .filter-group input {
+            padding: 4px 10px;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-family: var(--font);
+            background: var(--color-bg);
+            transition: var(--transition);
+            color: var(--color-text);
+            outline: none;
+            width: 100%;
+            height: 32px;
+        }
+        .filter-group input:focus {
+            border-color: var(--color-accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(74, 140, 247, 0.12);
+        }
+        .filter-group input::placeholder {
+            color: var(--color-text-muted);
+            font-size: 0.6rem;
+        }
+        .filter-group input[type="date"] {
+            min-height: 32px;
+            padding: 2px 8px;
+        }
+        .filter-group.location-range-group {
+            grid-column: span 2;
+        }
+        .filter-group.location-range-group .range-input-wrap {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .filter-group.location-range-group .range-input-wrap input {
+            flex: 1;
+            min-width: 80px;
+        }
+        .filter-group.location-range-group .range-input-wrap .btn {
+            padding: 2px 12px;
+            font-size: 0.6rem;
+            height: 32px;
+            flex-shrink: 0;
+        }
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding-top: 6px;
+            margin-top: 4px;
+            border-top: 1px solid var(--color-border-light);
+            align-items: center;
+        }
+        .filter-actions .btn {
+            font-size: 0.65rem;
+            padding: 3px 12px;
+            height: 30px;
+        }
+
+        /* ===== SUMMARY ===== */
+        .summary-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 20px;
+            padding: 4px 24px;
+            background: var(--color-card);
+            border-bottom: 1px solid var(--color-border-light);
+            align-items: center;
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.68rem;
+        }
+        .summary-item .icon {
+            width: 13px;
+            height: 13px;
+            color: var(--color-text-muted);
+            opacity: 0.5;
+        }
+        .summary-item .label {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .summary-item .value {
+            font-weight: 700;
+            font-size: 0.78rem;
+            color: var(--color-text);
+            background: var(--color-bg);
+            padding: 0 12px;
+            border-radius: 30px;
+            min-width: 28px;
+            text-align: center;
+            line-height: 24px;
+        }
+        .summary-item .value.highlight-value {
+            background: var(--color-highlight-bg);
+            border: 1px solid var(--color-highlight-border);
+            color: #92400e;
+        }
+        .summary-item .value.out-value {
+            background: var(--color-out-light);
+            border: 1px solid var(--color-out);
+            color: #5b21b6;
+        }
+
+        /* ===== TABLE ===== */
+        .table-section {
+            flex: 1;
+            padding: 8px 24px 2px 24px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            background: #fff;
+            box-shadow: var(--shadow-sm);
+            min-height: 280px;
+            max-height: 58vh;
+        }
+
+        #resultTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            table-layout: auto;
+            border: none;
+        }
+
+        #resultTable thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #resultTable th {
+            background: var(--color-primary);
+            color: #fff;
+            font-weight: 600;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 2px solid #1a2a3e;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            position: relative;
+            line-height: 1.3;
+        }
+        #resultTable th:hover {
+            background: #16263a;
+        }
+        #resultTable th .sort-icon {
+            margin-left: 4px;
+            display: inline-flex;
+            opacity: 0.35;
+            width: 10px;
+            height: 10px;
+            vertical-align: middle;
+            color: #8ab4ff;
+        }
+        #resultTable th.sorted-asc .sort-icon,
+        #resultTable th.sorted-desc .sort-icon {
+            opacity: 1;
+            color: var(--color-accent);
+        }
+        #resultTable th.sorted-desc .sort-icon {
+            transform: rotate(180deg);
+        }
+
+        #resultTable th:first-child,
+        #resultTable td:first-child {
+            min-width: 30px;
+            width: 4%;
+            text-align: center;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        #resultTable th:nth-child(2),
+        #resultTable td:nth-child(2) {
+            min-width: 32px;
+            width: 4%;
+            text-align: center;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        #resultTable th:nth-child(3),
+        #resultTable td:nth-child(3) {
+            min-width: 74px;
+            width: 14%;
+        }
+        #resultTable th:nth-child(4),
+        #resultTable td:nth-child(4) {
+            min-width: 84px;
+            width: 18%;
+        }
+        #resultTable th:nth-child(5),
+        #resultTable td:nth-child(5) {
+            min-width: 40px;
+            width: 6%;
+            text-align: center !important;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        #resultTable th:nth-child(5) {
+            text-align: center !important;
+        }
+        #resultTable td:nth-child(5) {
+            font-weight: 600;
+            color: var(--color-primary);
+            text-align: center !important;
+        }
+        #resultTable th:nth-child(6),
+        #resultTable td:nth-child(6) {
+            min-width: 64px;
+            width: 15%;
+        }
+        #resultTable th:nth-child(7),
+        #resultTable td:nth-child(7) {
+            min-width: 64px;
+            width: 15%;
+        }
+        #resultTable th:nth-child(8),
+        #resultTable td:nth-child(8) {
+            min-width: 58px;
+            width: 14%;
+        }
+
+        #resultTable td {
+            padding: 4px 10px;
+            border-bottom: 1px solid var(--color-border-light);
+            color: var(--color-text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            height: var(--row-height);
+            line-height: var(--row-height);
+            transition: background 0.12s;
+            font-size: 0.68rem;
+        }
+        #resultTable td:first-child {
+            font-weight: 600;
+            color: var(--color-text-muted);
+            font-size: 0.6rem;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+
+        #resultTable tbody tr:nth-child(even) {
+            background: #fafcfe;
+        }
+        #resultTable tbody tr:hover {
+            background: var(--color-accent-light);
+        }
+        #resultTable tbody tr.highlighted {
+            background: var(--color-highlight-bg) !important;
+            border-left: 3px solid var(--color-highlight-border);
+        }
+        #resultTable tbody tr.highlighted:hover {
+            background: #fef3c7 !important;
+        }
+        #resultTable tbody tr.highlighted td:first-child {
+            color: var(--color-highlight-border);
+            font-weight: 700;
+        }
+        #resultTable tbody tr.out-row {
+            background: #f5f3ff !important;
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        #resultTable tbody tr.out-row:hover {
+            background: #ede9fe !important;
+        }
+
+        .row-checkbox {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--color-accent);
+            margin: 0;
+            vertical-align: middle;
+        }
+        .row-checkbox:checked {
+            accent-color: var(--color-out);
+        }
+        th .row-checkbox {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--color-accent);
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .highlight-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--color-highlight-border);
+            border-radius: 2px;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 16px;
+            color: var(--color-text-muted);
+        }
+        .empty-state .icon {
+            width: 36px;
+            height: 36px;
+            margin: 0 auto 10px;
+            opacity: 0.2;
+            color: var(--color-text-muted);
+            display: block;
+        }
+        .empty-state p {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .empty-state .sub {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+        }
+
+        /* ===== PAGINATION ===== */
+        .table-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0 0 0;
+            gap: 6px;
+        }
+        .pagination-info {
+            font-size: 0.68rem;
+            color: var(--color-text-secondary);
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .pagination-controls .page-btn {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 3px 10px;
+            font-size: 0.68rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            color: var(--color-text);
+            font-family: var(--font);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+        }
+        .pagination-controls .page-btn .icon {
+            width: 12px;
+            height: 12px;
+        }
+        .pagination-controls .page-btn:hover:not(:disabled) {
+            border-color: var(--color-accent);
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+        }
+        .pagination-controls .page-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+        .page-numbers {
+            font-size: 0.68rem;
+            font-weight: 500;
+            padding: 0 8px;
+            color: var(--color-text-secondary);
+            min-width: 48px;
+            text-align: center;
+        }
+        #pageSizeSelect {
+            padding: 2px 6px;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.65rem;
+            background: var(--color-card);
+            font-weight: 500;
+            color: var(--color-text);
+            outline: none;
+            cursor: pointer;
+            font-family: var(--font);
+            height: 28px;
+        }
+        #pageSizeSelect:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(74, 140, 247, 0.12);
+        }
+
+        /* ===== OUT LOG TABLE ===== */
+        #outLogTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            table-layout: auto;
+            border: none;
+        }
+        #outLogTable thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #outLogTable th {
+            background: #1e1b4b;
+            color: #e0d7ff;
+            font-weight: 600;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 2px solid #312e81;
+            white-space: nowrap;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            line-height: 1.3;
+        }
+        #outLogTable td {
+            padding: 4px 10px;
+            border-bottom: 1px solid var(--color-border-light);
+            color: var(--color-text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            height: var(--row-height);
+            line-height: var(--row-height);
+            font-size: 0.68rem;
+        }
+        #outLogTable tbody tr:nth-child(even) {
+            background: #fafcfe;
+        }
+        #outLogTable tbody tr:hover {
+            background: var(--color-out-light);
+        }
+        #outLogTable .restore-btn {
+            background: transparent;
+            border: 1px solid var(--color-out);
+            color: var(--color-out);
+            border-radius: var(--radius-sm);
+            padding: 1px 12px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            font-family: var(--font);
+            height: 26px;
+        }
+        #outLogTable .restore-btn:hover:not(:disabled) {
+            background: var(--color-out);
+            color: #fff;
+        }
+        #outLogTable .restore-btn.owner-btn {
+            border-color: var(--color-success);
+            color: var(--color-success);
+        }
+        #outLogTable .restore-btn.owner-btn:hover:not(:disabled) {
+            background: var(--color-success);
+            color: #fff;
+        }
+        #outLogTable .restore-btn.other-btn {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--color-text-muted);
+            color: var(--color-text-muted);
+        }
+        #outLogTable .restore-btn.other-btn:hover {
+            background: transparent;
+            color: var(--color-text-muted);
+        }
+        #outLogTable .owner-badge {
+            display: inline-block;
+            background: var(--color-out-light);
+            color: #5b21b6;
+            font-size: 0.5rem;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .out-owner-filter {
+            padding: 4px 10px;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.65rem;
+            font-family: var(--font);
+            background: var(--color-bg);
+            color: var(--color-text);
+            outline: none;
+            height: 30px;
+            min-width: 120px;
+        }
+        .out-owner-filter:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(74, 140, 247, 0.12);
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1a2332;
+            color: #fff;
+            padding: 10px 28px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+            max-width: 94%;
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.error {
+            background: #b91c1c;
+        }
+        .toast.success {
+            background: #15803d;
+        }
+        .toast.warning {
+            background: #b45309;
+        }
+        .toast.out-toast {
+            background: #5b21b6;
+        }
+        .toast.google-toast {
+            background: #1a73e8;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 20, 36, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.12);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .loading-overlay p {
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== EXPORT DROPDOWN ===== */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .export-menu {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            color: var(--color-text);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            padding: 4px 0;
+            z-index: 50;
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+        .export-menu.show {
+            display: block;
+        }
+        .export-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 8px 18px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .export-menu button:hover {
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+        }
+        .export-menu button .icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.5;
+        }
+        .export-menu .menu-divider {
+            height: 1px;
+            background: var(--color-border-light);
+            margin: 4px 14px;
+        }
+        .export-menu .menu-label {
+            padding: 6px 18px 2px;
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        /* ================================================================
+           TAB CONTENT
+           ================================================================ */
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+        .tab-content .table-section {
+            padding-top: 4px;
+        }
+
+        .out-summary-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 18px;
+            padding: 4px 24px;
+            background: #f8f7ff;
+            border-bottom: 1px solid var(--color-border-light);
+            align-items: center;
+        }
+        .out-summary-bar .summary-item .value {
+            background: var(--color-out-light);
+            border: 1px solid var(--color-out);
+            color: #5b21b6;
+        }
+        .out-summary-bar .summary-item .label {
+            color: #5b21b6;
+        }
+
+        /* ================================================================
+           RESPONSIVE
+           ================================================================ */
+        @media (max-width: 860px) {
+            .app-header {
+                padding: 4px 14px;
+            }
+            .header-left h1 {
+                font-size: 0.85rem;
+            }
+            .search-bar,
+            .filters-panel,
+            .summary-bar,
+            .table-section,
+            .tabs-bar {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+            .filters-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 4px 8px;
+            }
+            .filter-group.location-range-group {
+                grid-column: span 1;
+            }
+            .summary-bar {
+                gap: 2px 12px;
+            }
+            .summary-item {
+                font-size: 0.6rem;
+            }
+            .summary-item .value {
+                font-size: 0.68rem;
+                padding: 0 6px;
+                min-width: 20px;
+                line-height: 20px;
+            }
+            #resultTable th,
+            #resultTable td {
+                padding: 3px 6px;
+                font-size: 0.6rem;
+            }
+            #resultTable th {
+                padding: 4px 6px;
+                font-size: 0.5rem;
+            }
+            .table-container {
+                max-height: 40vh;
+                min-height: 180px;
+            }
+            .header-right .btn span {
+                display: none;
+            }
+            .header-right .btn {
+                padding: 3px 8px;
+                height: 30px;
+            }
+            .filters-panel.collapsed {
+                padding: 0 14px;
+            }
+            .search-hint {
+                display: none;
+            }
+            .tabs-bar .user-info-wrap {
+                font-size: 0.6rem;
+            }
+            .tabs-bar .user-info-wrap .user-name {
+                font-size: 0.6rem;
+                padding: 1px 10px;
+            }
+            .tabs-bar .user-info-wrap .logout-btn {
+                font-size: 0.5rem;
+                padding: 1px 8px;
+                height: 22px;
+            }
+            .btn-tab {
+                font-size: 0.65rem;
+                padding: 4px 12px 6px 12px;
+            }
+            #resultTable th:first-child,
+            #resultTable td:first-child {
+                min-width: 24px;
+                width: 5%;
+            }
+            #resultTable th:nth-child(2),
+            #resultTable td:nth-child(2) {
+                min-width: 28px;
+                width: 5%;
+            }
+            #resultTable th:nth-child(3),
+            #resultTable td:nth-child(3) {
+                min-width: 58px;
+                width: 13%;
+            }
+            #resultTable th:nth-child(4),
+            #resultTable td:nth-child(4) {
+                min-width: 64px;
+                width: 16%;
+            }
+            #resultTable th:nth-child(5),
+            #resultTable td:nth-child(5) {
+                min-width: 32px;
+                width: 6%;
+            }
+            #resultTable th:nth-child(6),
+            #resultTable td:nth-child(6) {
+                min-width: 52px;
+                width: 14%;
+            }
+            #resultTable th:nth-child(7),
+            #resultTable td:nth-child(7) {
+                min-width: 52px;
+                width: 14%;
+            }
+            #resultTable th:nth-child(8),
+            #resultTable td:nth-child(8) {
+                min-width: 48px;
+                width: 17%;
+            }
+            .out-summary-bar {
+                padding: 4px 14px;
+                gap: 2px 12px;
+            }
+            .login-box {
+                padding: 28px 24px;
+            }
+            .login-box .logo {
+                font-size: 1.4rem;
+            }
+            .tabs-bar .user-info-wrap .sync-status {
+                font-size: 0.45rem;
+            }
+            .out-owner-filter {
+                min-width: 90px;
+                font-size: 0.6rem;
+                height: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filters-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .filter-group input {
+                font-size: 0.6rem;
+                padding: 3px 6px;
+                height: 28px;
+            }
+            .filter-group label {
+                font-size: 0.45rem;
+            }
+            #searchInput {
+                font-size: 0.7rem;
+                padding: 5px 8px 5px 32px;
+                height: 34px;
+            }
+            .search-wrapper .icon {
+                left: 8px;
+                width: 13px;
+                height: 13px;
+            }
+            .table-container {
+                border-radius: var(--radius-sm);
+                max-height: 36vh;
+                min-height: 140px;
+            }
+            .toast {
+                font-size: 0.62rem;
+                padding: 6px 16px;
+                bottom: 12px;
+            }
+            .pagination-controls .page-btn {
+                padding: 2px 6px;
+                font-size: 0.6rem;
+                height: 24px;
+            }
+            .page-numbers {
+                font-size: 0.6rem;
+                min-width: 36px;
+                padding: 0 3px;
+            }
+            #pageSizeSelect {
+                font-size: 0.55rem;
+                height: 24px;
+                padding: 1px 4px;
+            }
+            .pagination-info {
+                font-size: 0.6rem;
+            }
+            .btn {
+                font-size: 0.6rem;
+                padding: 2px 8px;
+                height: 30px;
+            }
+            .header-left h1 {
+                font-size: 0.75rem;
+            }
+            .header-badge {
+                font-size: 0.5rem;
+                padding: 1px 6px;
+            }
+            .btn-tab {
+                font-size: 0.58rem;
+                padding: 3px 8px 4px 8px;
+            }
+            .btn-tab .badge-tab {
+                font-size: 0.45rem;
+                padding: 0 4px;
+            }
+            .tabs-bar .user-info-wrap {
+                font-size: 0.5rem;
+                gap: 4px;
+            }
+            .tabs-bar .user-info-wrap .user-name {
+                font-size: 0.5rem;
+                padding: 1px 6px;
+            }
+            .tabs-bar .user-info-wrap .logout-btn {
+                font-size: 0.45rem;
+                padding: 1px 6px;
+                height: 20px;
+            }
+            .summary-item .value {
+                font-size: 0.6rem;
+                padding: 0 4px;
+                min-width: 18px;
+                line-height: 18px;
+            }
+            .summary-item {
+                font-size: 0.55rem;
+                gap: 2px;
+            }
+            .summary-item .icon {
+                width: 11px;
+                height: 11px;
+            }
+            #resultTable th,
+            #resultTable td {
+                padding: 2px 4px;
+                font-size: 0.52rem;
+            }
+            #resultTable th {
+                padding: 3px 4px;
+                font-size: 0.45rem;
+            }
+            .row-checkbox {
+                width: 12px;
+                height: 12px;
+            }
+            th .row-checkbox {
+                width: 12px;
+                height: 12px;
+            }
+            .filter-group.location-range-group .range-input-wrap .btn {
+                font-size: 0.5rem;
+                padding: 2px 6px;
+                height: 28px;
+            }
+            .out-summary-bar {
+                padding: 4px 14px;
+                gap: 2px 10px;
+            }
+            .out-summary-bar .summary-item {
+                font-size: 0.55rem;
+            }
+            .out-summary-bar .summary-item .value {
+                font-size: 0.6rem;
+                padding: 0 4px;
+                min-width: 18px;
+                line-height: 18px;
+            }
+            #outLogTable th,
+            #outLogTable td {
+                padding: 2px 4px;
+                font-size: 0.52rem;
+            }
+            #outLogTable th {
+                padding: 3px 4px;
+                font-size: 0.45rem;
+            }
+            #outLogTable .restore-btn {
+                font-size: 0.5rem;
+                padding: 1px 6px;
+                height: 22px;
+            }
+            .login-box {
+                padding: 20px 16px;
+            }
+            .login-box .logo {
+                font-size: 1.2rem;
+            }
+            .login-box .form-group input {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            .login-box .login-btn {
+                font-size: 0.8rem;
+                height: 40px;
+            }
+            .login-box .user-hint span {
+                font-size: 0.5rem;
+                padding: 1px 6px;
+            }
+            .out-owner-filter {
+                min-width: 70px;
+                font-size: 0.55rem;
+                height: 24px;
+                padding: 2px 6px;
+            }
+            .tabs-bar .user-info-wrap .sync-status {
+                font-size: 0.4rem;
+            }
+            .tabs-bar .user-info-wrap .sync-status .dot {
+                width: 4px;
+                height: 4px;
+            }
+        }
+
+        .btn:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+        }
+        .btn-refresh:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            transform: none;
+        }
+        .btn-refresh .icon {
+            transition: transform 0.6s ease;
+        }
+        .btn-refresh.spinning .icon {
+            transform: rotate(360deg);
+        }
+
+        .out-filter-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .out-filter-row label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        @media print {
+            .app-header,
+            .search-bar,
+            .filters-panel,
+            .summary-bar,
+            .table-footer,
+            .no-print,
+            .export-dropdown,
+            #toggleFiltersBtn,
+            #clearFiltersBtn,
+            #clearHighlightsBtn,
+            #exportBtn,
+            .tabs-bar,
+            .btn-out,
+            .login-overlay {
+                display: none !important;
+            }
+            .table-section {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .table-container {
+                max-height: none !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            #resultTable {
+                font-size: 9px !important;
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            #resultTable th {
+                background: #0b1424 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                padding: 4px 5px !important;
+                border: 1px solid #000 !important;
+            }
+            #resultTable td {
+                padding: 3px 5px !important;
+                border: 1px solid #ccc !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            #resultTable tr.highlighted {
+                background: #fef9e7 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            #resultTable tbody tr {
+                page-break-inside: avoid !important;
+            }
+            #resultTable thead {
+                display: table-header-group !important;
+            }
+            body {
+                background: #fff !important;
+                padding: 10px !important;
+                margin: 0 !important;
+            }
+            .row-checkbox {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOGIN OVERLAY ===== -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="logo">
+                <svg class="icon" viewBox="0 0 24 24" style="width:30px;height:30px;color:var(--color-accent);"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Ware<span>House</span>
+            </div>
+            <div class="subtitle">Inventory Management System · Secure Login</div>
+
+            <!-- Google Auth Status -->
+            <div class="google-auth-status" id="googleAuthStatus">
+                <span class="status-dot disconnected" id="googleStatusDot"></span>
+                <span id="googleStatusText">Google Sheets: Not connected</span>
+                <button class="btn btn-google" id="googleAuthBtn" style="margin-left:auto;height:28px;font-size:0.65rem;padding:0 12px;">
+                    Connect Google
+                </button>
+            </div>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="usernameInput">Username</label>
+                    <input type="text" id="usernameInput" placeholder="Enter your username" autofocus />
+                </div>
+                <div class="form-group">
+                    <label for="passwordInput">Password</label>
+                    <input type="password" id="passwordInput" placeholder="Enter your password" />
+                </div>
+                <div class="login-error" id="loginError"></div>
+                <button type="submit" class="btn btn-primary login-btn">Sign In</button>
+            </form>
+            <div class="user-hint">
+                <span class="admin-hint">🔑 admin / admin123</span>
+                <span>👤 alice / alice123</span>
+                <span>👤 bob / bob123</span>
+                <span>👤 carol / carol123</span>
+                <span>👤 dave / dave123</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header no-print" id="appHeader" style="display:none;">
+        <div class="header-left">
+            <div class="logo">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <h1>Ware<span>House</span></h1>
+            </div>
+            <span class="header-badge" id="recordBadge">0 records</span>
+            <span class="header-badge highlight-badge" id="highlightBadge" style="display:none;">⭐ 0</span>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-refresh" id="refreshBtn" aria-label="Sync with Google Sheets">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span>Sync</span>
+            </button>
+            <button class="btn btn-out" id="outBtn" disabled aria-label="Move selected items out">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+                <span>Out</span>
+                <span id="outCountBadge" style="background:rgba(255,255,255,0.2);padding:0 7px;border-radius:12px;font-size:0.6rem;font-weight:700;display:none;">0</span>
+            </button>
+            <button class="btn btn-header" id="toggleFiltersBtn" aria-label="Toggle filters">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 13 10 21 14 18 14 13 22 3"/></svg>
+                <span>Filters</span>
+            </button>
+            <button class="btn btn-ghost" id="clearFiltersBtn" aria-label="Clear all filters" style="color:rgba(255,255,255,0.6);">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Clear</span>
+            </button>
+            <button class="btn btn-ghost" id="clearHighlightsBtn" aria-label="Clear all highlights" style="color:rgba(255,255,255,0.6);">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                <span>Clear ⭐</span>
+            </button>
+            <div class="export-dropdown">
+                <button class="btn btn-header" id="exportBtn" aria-label="Export data">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Export</span>
+                </button>
+                <div class="export-menu" id="exportMenu" role="menu">
+                    <div class="menu-label">📋 Reports</div>
+                    <button data-format="inventory" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        Inventory Report
+                    </button>
+                    <button data-format="highlighted" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        Highlighted Report
+                    </button>
+                    <button data-format="summary" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                        Summary Log
+                    </button>
+                    <div class="menu-divider"></div>
+                    <div class="menu-label">📤 Out Logs</div>
+                    <button data-format="outlog-all" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+                        All Users Out Log
+                    </button>
+                    <button data-format="outlog-user" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Per User Out Log (Sheets)
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button data-format="print" role="menuitem">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M18 9H6"/><path d="M18 13v6H6v-6"/><rect x="8" y="15" width="8" height="2"/></svg>
+                        Print View
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== TABS BAR ===== -->
+    <div class="tabs-bar no-print" id="tabsBar" style="display:none;">
+        <button class="btn-tab active" data-tab="inventory" id="tabInventory">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Inventory
+            <span class="badge-tab" id="invTabBadge">0</span>
+        </button>
+        <button class="btn-tab" data-tab="outlog" id="tabOutLog">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+            Out Log
+            <span class="badge-tab out-badge" id="outTabBadge">0</span>
+        </button>
+        <div class="tab-spacer"></div>
+        <div class="user-info-wrap">
+            <span class="user-name" id="currentUserDisplay">User</span>
+            <span class="user-role" id="currentRoleDisplay">Role</span>
+            <span class="sync-status" id="syncStatus"><span class="dot"></span> Auto-sync</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 1: INVENTORY                                                 -->
+    <!-- ================================================================ -->
+    <div class="tab-content active" id="tabContentInventory" style="display:none;">
+
+        <section class="search-bar no-print">
+            <div class="search-wrapper">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" placeholder="Search by Model, Pallet, Location, Item ID …" autocomplete="off" aria-label="Search inventory" />
+                <span class="search-hint">⌘K</span>
+            </div>
+        </section>
+
+        <section class="filters-panel no-print" id="filtersSection">
+            <div class="filters-grid">
+                <div class="filter-group location-range-group">
+                    <label for="locationRangeInput">Location Range</label>
+                    <div class="range-input-wrap">
+                        <input type="text" id="locationRangeInput" placeholder="e.g. A1-A8, B1-B5, C1,C3" />
+                        <button class="btn btn-primary" id="locationRangeGoBtn">Go</button>
+                        <button class="btn btn-outline" id="locationRangeClearBtn">Clear</button>
+                    </div>
+                </div>
+                <div class="filter-group"><label for="filterLocation">Location</label><input type="text" id="filterLocation" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterModel">Model</label><input type="text" id="filterModel" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterPlacedBy">Placed By</label><input type="text" id="filterPlacedBy" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterFloor">Floor</label><input type="text" id="filterFloor" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterDept">Dept</label><input type="text" id="filterDept" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterItemId">Item ID</label><input type="text" id="filterItemId" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterPallet">Pallet</label><input type="text" id="filterPallet" placeholder="Any" /></div>
+                <div class="filter-group"><label for="filterPlaceFrom">Placement From</label><input type="date" id="filterPlaceFrom" /></div>
+                <div class="filter-group"><label for="filterPlaceTo">Placement To</label><input type="date" id="filterPlaceTo" /></div>
+                <div class="filter-group"><label for="filterReceiveFrom">Received From</label><input type="date" id="filterReceiveFrom" /></div>
+                <div class="filter-group"><label for="filterReceiveTo">Received To</label><input type="date" id="filterReceiveTo" /></div>
+                <div class="filter-group"><label for="filterBoxMin">Boxes Min</label><input type="number" id="filterBoxMin" placeholder="0" min="0" step="1" /></div>
+                <div class="filter-group"><label for="filterBoxMax">Boxes Max</label><input type="number" id="filterBoxMax" placeholder="∞" min="0" step="1" /></div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-highlight" id="showHighlightedBtn">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <span>Show Highlighted</span>
+                    <span id="highlightFilterCount" style="background:var(--color-highlight-bg);padding:0 10px;border-radius:12px;font-size:0.6rem;color:#92400e;font-weight:700;display:none;">0</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="summary-bar no-print" id="summarySection">
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span class="label">Records</span><span class="value" id="sumRecords">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 7h-4"/><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 12h8"/><path d="M10 16h4"/></svg>
+                <span class="label">Boxes</span><span class="value" id="sumBoxes">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span class="label">Items</span><span class="value" id="sumItems">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span class="label">Valuation</span><span class="value" id="sumValuation">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span class="label">Models</span><span class="value" id="sumModels">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><line x1="2" y1="17" x2="22" y2="17"/></svg>
+                <span class="label">⭐</span>
+                <span class="value highlight-value" id="sumHighlighted">0</span>
+            </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;flex:1;min-height:0;padding:0 24px 2px 24px;">
+            <div class="table-section" style="padding:4px 0 2px 0;">
+                <div class="table-container" id="tableContainer" role="table" aria-label="Inventory data table">
+                    <table id="resultTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer no-print">
+                    <div class="pagination-info" id="paginationInfo">Showing 0–0 of 0</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn" id="pagePrev" disabled aria-label="Previous page">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <span class="page-numbers" id="pageNumbers">1 / 1</span>
+                        <button class="page-btn" id="pageNext" disabled aria-label="Next page">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <select id="pageSizeSelect" aria-label="Rows per page">
+                            <option value="25">25</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="250">250</option>
+                            <option value="500">500</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- TAB 2: OUT LOG                                                   -->
+    <!-- ================================================================ -->
+    <div class="tab-content" id="tabContentOutLog" style="display:none;">
+
+        <div class="out-summary-bar no-print" id="outSummarySection">
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+                <span class="label">Out Total</span><span class="value out-value" id="outTotalCount">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span class="label">Boxes Out</span><span class="value out-value" id="outBoxesTotal">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span class="label">Items Out</span><span class="value out-value" id="outItemsTotal">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span class="label">Valuation Out</span><span class="value out-value" id="outValuationTotal">0</span>
+            </div>
+            <div class="summary-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span class="label">Models Out</span><span class="value out-value" id="outModelsTotal">0</span>
+            </div>
+            <div class="summary-item" style="margin-left:auto;">
+                <div class="out-filter-row">
+                    <label for="outOwnerFilter">Filter by User</label>
+                    <select id="outOwnerFilter" class="out-owner-filter">
+                        <option value="all">All Users</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section" style="padding:4px 24px 2px 24px;">
+            <div class="table-container" id="outLogContainer" role="table" aria-label="Out log">
+                <table id="outLogTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Pallet</th>
+                            <th>Model</th>
+                            <th>Boxes</th>
+                            <th>Location</th>
+                            <th>Out Date</th>
+                            <th>Out Time</th>
+                            <th>Owner</th>
+                            <th style="text-align:center;width:80px;">Restore</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outLogBody"></tbody>
+                </table>
+            </div>
+            <div class="table-footer no-print">
+                <div class="pagination-info" id="outPaginationInfo">Showing 0–0 of 0</div>
+                <div class="pagination-controls">
+                    <button class="page-btn" id="outPagePrev" disabled aria-label="Previous page">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <span class="page-numbers" id="outPageNumbers">1 / 1</span>
+                    <button class="page-btn" id="outPageNext" disabled aria-label="Next page">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <select id="outPageSizeSelect" aria-label="Rows per page">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast" role="alert"></div>
+
+    <!-- ===== LOADING ===== -->
+    <div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+        <div class="loading-spinner"></div>
+        <p>Processing data…</p>
+    </div>
+
+    <script>
+        // ================================================================
+        //  WAREHOUSE INVENTORY SYSTEM — v12.0
+        //  Full OAuth2 Google Sheets Integration · Two-Way Sync
+        // ================================================================
+
+        (function() {
+            'use strict';
+
+            // =============================================================
+            // 1. CONFIGURATION — UPDATE WITH YOUR CLIENT ID
+            // =============================================================
+            const CONFIG = {
+                // ⚠️ REPLACE WITH YOUR GOOGLE CLOUD CLIENT ID ⚠️
+                CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+                // Google Sheet ID
+                SHEET_ID: '1isK2xGNTWq98D3QyqYekJXBw2h3AxLIE5KdVLo_jHJ0',
+                // Sheet name for inventory data
+                INVENTORY_SHEET: 'Sheet1',
+                // Sheet name for out log (will be created if not exists)
+                OUT_LOG_SHEET: 'Out_Log',
+                // Scopes needed
+                SCOPES: 'https://www.googleapis.com/auth/spreadsheets'
+            };
+
+            // =============================================================
+            // 2. USER SYSTEM
+            // =============================================================
+            const USERS = [{
+                id: 'admin',
+                username: 'admin',
+                password: 'admin123',
+                name: 'Administrator',
+                role: 'admin',
+                display: 'Admin',
+                color: '#7c3aed'
+            }, {
+                id: 'alice',
+                username: 'alice',
+                password: 'alice123',
+                name: 'Alice Johnson',
+                role: 'picker',
+                display: 'Alice J.',
+                color: '#4f8cff'
+            }, {
+                id: 'bob',
+                username: 'bob',
+                password: 'bob123',
+                name: 'Bob Smith',
+                role: 'picker',
+                display: 'Bob S.',
+                color: '#22c55e'
+            }, {
+                id: 'carol',
+                username: 'carol',
+                password: 'carol123',
+                name: 'Carol White',
+                role: 'picker',
+                display: 'Carol W.',
+                color: '#f59e0b'
+            }, {
+                id: 'dave',
+                username: 'dave',
+                password: 'dave123',
+                name: 'Dave Brown',
+                role: 'picker',
+                display: 'Dave B.',
+                color: '#ef4444'
+            }];
+
+            let currentUser = null;
+            let syncInterval = null;
+            let tokenClient = null;
+            let accessToken = null;
+            let isGapiReady = false;
+
+            // =============================================================
+            // 3. DOM REFS
+            // =============================================================
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('usernameInput');
+            const passwordInput = document.getElementById('passwordInput');
+            const loginError = document.getElementById('loginError');
+            const appHeader = document.getElementById('appHeader');
+            const tabsBar = document.getElementById('tabsBar');
+            const tabContentInventory = document.getElementById('tabContentInventory');
+            const tabContentOutLog = document.getElementById('tabContentOutLog');
+            const currentUserDisplay = document.getElementById('currentUserDisplay');
+            const currentRoleDisplay = document.getElementById('currentRoleDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const syncStatus = document.getElementById('syncStatus');
+
+            const googleAuthStatus = document.getElementById('googleAuthStatus');
+            const googleStatusDot = document.getElementById('googleStatusDot');
+            const googleStatusText = document.getElementById('googleStatusText');
+            const googleAuthBtn = document.getElementById('googleAuthBtn');
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            const clearHighlightsBtn = document.getElementById('clearHighlightsBtn');
+            const showHighlightedBtn = document.getElementById('showHighlightedBtn');
+            const highlightFilterCount = document.getElementById('highlightFilterCount');
+            const searchInput = document.getElementById('searchInput');
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            const recordBadge = document.getElementById('recordBadge');
+            const highlightBadge = document.getElementById('highlightBadge');
+            const sumRecords = document.getElementById('sumRecords');
+            const sumBoxes = document.getElementById('sumBoxes');
+            const sumItems = document.getElementById('sumItems');
+            const sumValuation = document.getElementById('sumValuation');
+            const sumModels = document.getElementById('sumModels');
+            const sumHighlighted = document.getElementById('sumHighlighted');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const pagePrev = document.getElementById('pagePrev');
+            const pageNext = document.getElementById('pageNext');
+            const pageSizeSelect = document.getElementById('pageSizeSelect');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const exportBtn = document.getElementById('exportBtn');
+            const exportMenu = document.getElementById('exportMenu');
+            const filtersSection = document.getElementById('filtersSection');
+            const toast = document.getElementById('toast');
+
+            const tabInventory = document.getElementById('tabInventory');
+            const tabOutLog = document.getElementById('tabOutLog');
+            const invTabBadge = document.getElementById('invTabBadge');
+            const outTabBadge = document.getElementById('outTabBadge');
+
+            const outLogBody = document.getElementById('outLogBody');
+            const outTotalCount = document.getElementById('outTotalCount');
+            const outBoxesTotal = document.getElementById('outBoxesTotal');
+            const outItemsTotal = document.getElementById('outItemsTotal');
+            const outValuationTotal = document.getElementById('outValuationTotal');
+            const outModelsTotal = document.getElementById('outModelsTotal');
+            const outPaginationInfo = document.getElementById('outPaginationInfo');
+            const outPageNumbers = document.getElementById('outPageNumbers');
+            const outPagePrev = document.getElementById('outPagePrev');
+            const outPageNext = document.getElementById('outPageNext');
+            const outPageSizeSelect = document.getElementById('outPageSizeSelect');
+            const outOwnerFilter = document.getElementById('outOwnerFilter');
+
+            const outBtn = document.getElementById('outBtn');
+            const outCountBadge = document.getElementById('outCountBadge');
+
+            const locationRangeInput = document.getElementById('locationRangeInput');
+            const locationRangeGoBtn = document.getElementById('locationRangeGoBtn');
+            const locationRangeClearBtn = document.getElementById('locationRangeClearBtn');
+
+            const filterLocation = document.getElementById('filterLocation');
+            const filterModel = document.getElementById('filterModel');
+            const filterPlacedBy = document.getElementById('filterPlacedBy');
+            const filterFloor = document.getElementById('filterFloor');
+            const filterDept = document.getElementById('filterDept');
+            const filterItemId = document.getElementById('filterItemId');
+            const filterPallet = document.getElementById('filterPallet');
+            const filterPlaceFrom = document.getElementById('filterPlaceFrom');
+            const filterPlaceTo = document.getElementById('filterPlaceTo');
+            const filterReceiveFrom = document.getElementById('filterReceiveFrom');
+            const filterReceiveTo = document.getElementById('filterReceiveTo');
+            const filterBoxMin = document.getElementById('filterBoxMin');
+            const filterBoxMax = document.getElementById('filterBoxMax');
+
+            // =============================================================
+            // 4. STATE
+            // =============================================================
+            let allData = [];
+            let filteredData = [];
+            let sortKey = null;
+            let sortDir = 'asc';
+            let searchTerm = '';
+            let highlightedSet = new Set();
+            let showHighlightedOnly = false;
+            let currentPage = 1;
+            let pageSize = 50;
+
+            let outData = [];
+            let outCurrentPage = 1;
+            let outPageSize = 50;
+            let outFilterOwner = 'all';
+
+            let selectedUIDs = new Set();
+            let locationRangeFilter = [];
+            let isSyncing = false;
+            let isGoogleAuthorized = false;
+            let pendingOutData = [];
+            let pendingRestoreData = [];
+
+            // =============================================================
+            // 5. CONSTANTS
+            // =============================================================
+            const ALL_COLUMNS = [
+                'Location', 'Model Number', 'Boxes', 'Items/Box', 'Total Items',
+                'Carton CBM', 'Box Rate', 'Valuation', 'Placed By',
+                'Placement Date', 'Placement Time', 'Age Placed',
+                'Received Date', 'Received Time', 'Age Received',
+                'Pallet Serial', 'Received Department', 'Production Floor', 'Item ID'
+            ];
+
+            const DISPLAY_COLUMNS = [
+                '#',
+                'Pallet Serial',
+                'Model Number',
+                'Boxes',
+                'Location',
+                'Placement Date',
+                'Placement Time'
+            ];
+
+            const HEADER_LABELS = {
+                '#': '#',
+                'Pallet Serial': 'Pallet',
+                'Model Number': 'Model',
+                'Boxes': 'Boxes',
+                'Location': 'Location',
+                'Placement Date': 'Date',
+                'Placement Time': 'Time'
+            };
+
+            const SORTABLE_COLUMNS = DISPLAY_COLUMNS.filter(c => c !== '#');
+
+            // =============================================================
+            // 6. UTILITIES
+            // =============================================================
+            function escapeText(str) {
+                if (str === undefined || str === null || str === '') return '';
+                return String(str);
+            }
+
+            function setSafeText(el, str) {
+                el.textContent = escapeText(str);
+            }
+
+            function normalize(str) {
+                if (str === undefined || str === null) return '';
+                return String(str).trim().toLowerCase().replace(/\s+/g, ' ');
+            }
+
+            function parseNumber(v) {
+                if (v === undefined || v === null || v === '') return 0;
+                const cleaned = String(v).replace(/,/g, '').replace(/[^0-9.\-]/g, '');
+                const n = parseFloat(cleaned);
+                return isNaN(n) ? 0 : n;
+            }
+
+            function parseDate(v) {
+                if (!v) return null;
+                const str = String(v).trim();
+                if (!str) return null;
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) return d;
+                const parts = str.split(/[\/\-.]/);
+                if (parts.length === 3) {
+                    let year = parseInt(parts[2], 10);
+                    let month = parseInt(parts[1], 10) - 1;
+                    let day = parseInt(parts[0], 10);
+                    if (year < 100) year += 2000;
+                    if (parts[0].length === 4) {
+                        year = parseInt(parts[0], 10);
+                        month = parseInt(parts[1], 10) - 1;
+                        day = parseInt(parts[2], 10);
+                    }
+                    d = new Date(year, month, day);
+                    if (!isNaN(d.getTime())) return d;
+                }
+                return null;
+            }
+
+            function formatShortDate(value) {
+                if (!value) return '';
+                let d = value;
+                if (typeof value === 'string' || typeof value === 'number') {
+                    d = new Date(value);
+                }
+                if (d instanceof Date && !isNaN(d.getTime())) {
+                    const m = (d.getMonth() + 1).toString().padStart(2, '0');
+                    const day = d.getDate().toString().padStart(2, '0');
+                    const y = d.getFullYear();
+                    return m + '/' + day + '/' + y;
+                }
+                if (typeof value === 'string' && /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value.trim())) {
+                    return value.trim();
+                }
+                if (typeof value === 'string' && /^\d{4}-\d{1,2}-\d{1,2}/.test(value.trim())) {
+                    const parts = value.trim().split('-');
+                    if (parts.length >= 3) {
+                        return parts[1] + '/' + parts[2].split(' ')[0] + '/' + parts[0];
+                    }
+                }
+                return String(value);
+            }
+
+            function generateUid() {
+                return crypto.randomUUID ? crypto.randomUUID() :
+                    Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
+            }
+
+            function formatNow() {
+                const now = new Date();
+                const d = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                const t = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: false });
+                return { date: d, time: t, full: d + ' ' + t };
+            }
+
+            function getSheetIdByName(spreadsheetId, sheetName, callback) {
+                fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`, {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    const sheet = data.sheets.find(s => s.properties.title === sheetName);
+                    if (sheet) {
+                        callback(sheet.properties.sheetId);
+                    } else {
+                        callback(null);
+                    }
+                })
+                .catch(() => callback(null));
+            }
+
+            function createSheet(spreadsheetId, sheetName, callback) {
+                const body = {
+                    requests: [{
+                        addSheet: {
+                            properties: { title: sheetName }
+                        }
+                    }]
+                };
+                fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.replies && data.replies[0] && data.replies[0].addSheet) {
+                        callback(data.replies[0].addSheet.properties.sheetId);
+                    } else {
+                        callback(null);
+                    }
+                })
+                .catch(() => callback(null));
+            }
+
+            // =============================================================
+            // 7. GOOGLE SHEETS OAUTH2
+            // =============================================================
+            function initGoogleAuth() {
+                const clientId = CONFIG.CLIENT_ID;
+                if (!clientId || clientId === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+                    googleStatusText.textContent = '⚠️ Please set CLIENT_ID in CONFIG';
+                    googleStatusDot.className = 'status-dot disconnected';
+                    googleAuthBtn.textContent = 'Configure';
+                    googleAuthBtn.onclick = () => {
+                        showToast('Please set your Google Client ID in the CONFIG section.', 'warning');
+                    };
+                    return;
+                }
+
+                try {
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: clientId,
+                        scope: CONFIG.SCOPES,
+                        callback: (tokenResponse) => {
+                            if (tokenResponse.error) {
+                                console.error('OAuth error:', tokenResponse.error);
+                                setGoogleAuthStatus(false, 'Auth error: ' + tokenResponse.error);
+                                return;
+                            }
+                            accessToken = tokenResponse.access_token;
+                            setGoogleAuthStatus(true, 'Connected to Google Sheets');
+                            showToast('Google Sheets connected successfully!', 'success');
+                            // Now sync data
+                            fullSync();
+                        },
+                    });
+                    googleAuthBtn.onclick = () => {
+                        if (isGoogleAuthorized) {
+                            // Re-auth
+                            tokenClient.requestAccessToken({ prompt: 'consent' });
+                        } else {
+                            tokenClient.requestAccessToken({ prompt: 'consent' });
+                        }
+                    };
+                    setGoogleAuthStatus(false, 'Click "Connect Google" to authorize');
+                } catch (e) {
+                    console.error('Google auth init error:', e);
+                    googleStatusText.textContent = '⚠️ Error loading Google auth. Refresh the page.';
+                    googleStatusDot.className = 'status-dot disconnected';
+                }
+            }
+
+            function setGoogleAuthStatus(connected, message) {
+                isGoogleAuthorized = connected;
+                googleStatusDot.className = 'status-dot ' + (connected ? 'connected' : 'disconnected');
+                googleStatusText.textContent = message || (connected ? 'Connected to Google Sheets' :
+                'Not connected');
+                googleAuthBtn.textContent = connected ? 'Re-authorize' : 'Connect Google';
+                if (connected) {
+                    googleAuthStatus.style.borderColor = 'var(--color-success)';
+                } else {
+                    googleAuthStatus.style.borderColor = 'var(--color-border)';
+                }
+                updateSyncStatus();
+            }
+
+            function updateSyncStatus() {
+                if (isSyncing) {
+                    syncStatus.className = 'sync-status syncing';
+                    syncStatus.innerHTML = '<span class="dot"></span> Syncing…';
+                } else if (!isGoogleAuthorized) {
+                    syncStatus.className = 'sync-status error';
+                    syncStatus.innerHTML = '<span class="dot"></span> Google not connected';
+                } else {
+                    syncStatus.className = 'sync-status';
+                    syncStatus.innerHTML = '<span class="dot"></span> Auto-sync';
+                }
+            }
+
+            // =============================================================
+            // 8. GOOGLE SHEETS READ / WRITE
+            // =============================================================
+            function readSheetData(sheetName, callback) {
+                if (!accessToken) {
+                    callback([]);
+                    return;
+                }
+                const url =
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetName)}?majorDimension=ROWS`;
+                fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.values && data.values.length > 0) {
+                        callback(data.values);
+                    } else {
+                        callback([]);
+                    }
+                })
+                .catch(() => callback([]));
+            }
+
+            function writeSheetData(sheetName, values, callback) {
+                if (!accessToken) {
+                    callback(false);
+                    return;
+                }
+                const range = encodeURIComponent(sheetName);
+                const url =
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`;
+                const body = { values: values };
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.updatedRows !== undefined) {
+                        callback(true);
+                    } else {
+                        callback(false);
+                    }
+                })
+                .catch(() => callback(false));
+            }
+
+            function appendSheetData(sheetName, values, callback) {
+                if (!accessToken) {
+                    callback(false);
+                    return;
+                }
+                const range = encodeURIComponent(sheetName);
+                const url =
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+                const body = { values: values };
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.updates && data.updates.updatedRows) {
+                        callback(true);
+                    } else {
+                        callback(false);
+                    }
+                })
+                .catch(() => callback(false));
+            }
+
+            function clearSheet(sheetName, callback) {
+                if (!accessToken) {
+                    callback(false);
+                    return;
+                }
+                const range = encodeURIComponent(sheetName);
+                const url =
+                    `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${range}:clear`;
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    callback(true);
+                })
+                .catch(() => callback(false));
+            }
+
+            // =============================================================
+            // 9. FULL SYNC — Read from Google Sheets
+            // =============================================================
+            function fullSync(showLoading = true) {
+                if (!currentUser) return;
+                if (!accessToken) {
+                    if (showLoading) showToast('Please connect Google Sheets first.', 'warning');
+                    return;
+                }
+                if (isSyncing) return;
+                isSyncing = true;
+                updateSyncStatus();
+                if (showLoading) loadingOverlay.classList.add('active');
+
+                // First, read the out log sheet
+                readSheetData(CONFIG.OUT_LOG_SHEET, (outValues) => {
+                    // Parse out data
+                    const outHeaders = outValues.length > 0 ? outValues[0] : [];
+                    const outRows = outValues.slice(1);
+                    const parsedOut = outRows.map(row => {
+                        const obj = {};
+                        outHeaders.forEach((h, i) => {
+                            obj[h] = row[i] !== undefined ? row[i] : '';
+                        });
+                        return obj;
+                    });
+                    outData = parsedOut;
+                    saveOutLog();
+
+                    // Now read inventory
+                    readSheetData(CONFIG.INVENTORY_SHEET, (invValues) => {
+                        if (invValues.length === 0) {
+                            allData = [];
+                            applyFiltersAndRender();
+                            renderOutLog();
+                            updateTabBadges();
+                            populateOwnerFilter();
+                            isSyncing = false;
+                            updateSyncStatus();
+                            if (showLoading) loadingOverlay.classList.remove('active');
+                            if (showLoading) showToast('No data found in sheet.', 'warning');
+                            return;
+                        }
+
+                        const headers = invValues[0];
+                        const rows = invValues.slice(1);
+
+                        const outUIDs = new Set(outData.map(item => item._uid));
+
+                        const newData = rows.map(row => {
+                            const obj = {};
+                            headers.forEach((h, i) => {
+                                obj[h] = row[i] !== undefined && row[i] !== null ? row[i] : '';
+                            });
+                            obj._uid = generateUid();
+                            return obj;
+                        });
+
+                        allData = newData.filter(row => !outUIDs.has(row._uid));
+
+                        searchTerm = '';
+                        searchInput.value = '';
+                        sortKey = null;
+                        sortDir = 'asc';
+                        currentPage = 1;
+                        clearFilterInputs();
+                        locationRangeFilter = [];
+                        locationRangeInput.value = '';
+
+                        applyFiltersAndRender();
+                        renderOutLog();
+                        updateTabBadges();
+                        populateOwnerFilter();
+
+                        isSyncing = false;
+                        updateSyncStatus();
+                        if (showLoading) loadingOverlay.classList.remove('active');
+                        if (showLoading) showToast(`Synced ${allData.length} records.`, 'google-toast');
+                    });
+                });
+            }
+
+            // =============================================================
+            // 10. PUSH OUT DATA TO GOOGLE SHEETS
+            // =============================================================
+            function pushOutToSheet(outEntries, callback) {
+                if (!accessToken) {
+                    callback(false);
+                    return;
+                }
+
+                // Build headers
+                const headers = ['_uid', '_outId', '_ownerId', '_ownerName', '_outDate', '_outTime', '_outBy',
+                    'Pallet Serial', 'Model Number', 'Boxes', 'Location', 'Valuation', 'Total Items',
+                    'Placement Date', 'Placement Time'
+                ];
+
+                const rows = outEntries.map(item => {
+                    return [
+                        item._uid || '',
+                        item._outId || '',
+                        item._ownerId || '',
+                        item._ownerName || '',
+                        item._outDate || '',
+                        item._outTime || '',
+                        item._outBy || '',
+                        item['Pallet Serial'] || '',
+                        item['Model Number'] || '',
+                        parseNumber(item['Boxes']),
+                        item['Location'] || '',
+                        parseNumber(item['Valuation']),
+                        parseNumber(item['Total Items']),
+                        item['Placement Date'] || '',
+                        item['Placement Time'] || ''
+                    ];
+                });
+
+                const allRows = [headers, ...rows];
+
+                // First clear the sheet, then write all data
+                clearSheet(CONFIG.OUT_LOG_SHEET, (cleared) => {
+                    writeSheetData(CONFIG.OUT_LOG_SHEET, allRows, (written) => {
+                        callback(written);
+                    });
+                });
+            }
+
+            // =============================================================
+            // 11. PUSH INVENTORY TO GOOGLE SHEETS
+            // =============================================================
+            function pushInventoryToSheet(inventoryData, callback) {
+                if (!accessToken) {
+                    callback(false);
+                    return;
+                }
+
+                const headers = ALL_COLUMNS;
+                const rows = inventoryData.map(item => {
+                    return ALL_COLUMNS.map(col => {
+                        return item[col] !== undefined ? item[col] : '';
+                    });
+                });
+
+                const allRows = [headers, ...rows];
+
+                clearSheet(CONFIG.INVENTORY_SHEET, (cleared) => {
+                    writeSheetData(CONFIG.INVENTORY_SHEET, allRows, (written) => {
+                        callback(written);
+                    });
+                });
+            }
+
+            // =============================================================
+            // 12. AUTHENTICATION
+            // =============================================================
+            function authenticateUser(username, password) {
+                const user = USERS.find(u =>
+                    u.username.toLowerCase() === username.toLowerCase() &&
+                    u.password === password
+                );
+                return user || null;
+            }
+
+            function loginUser(username, password) {
+                const user = authenticateUser(username, password);
+                if (!user) {
+                    loginError.textContent = 'Invalid username or password.';
+                    return false;
+                }
+                currentUser = user;
+                loginOverlay.classList.add('hidden');
+                appHeader.style.display = 'flex';
+                tabsBar.style.display = 'flex';
+                tabContentInventory.style.display = 'flex';
+                tabContentOutLog.style.display = 'flex';
+
+                currentUserDisplay.textContent = user.display;
+                currentRoleDisplay.textContent = user.role === 'admin' ? '🔑 Admin' : '📦 Picker';
+                currentRoleDisplay.className = 'user-role' + (user.role === 'admin' ? ' admin-role' : '');
+
+                if (user.role === 'admin') {
+                    outOwnerFilter.disabled = false;
+                } else {
+                    outOwnerFilter.value = user.id;
+                    outOwnerFilter.disabled = true;
+                }
+
+                populateOwnerFilter();
+                sessionStorage.setItem('warehouse_current_user', user.id);
+                loginError.textContent = '';
+
+                // Load out log from localStorage first
+                loadOutLog();
+
+                // Start auto-sync
+                startAutoSync();
+
+                // Try to connect Google if not already
+                if (!isGoogleAuthorized && tokenClient) {
+                    // Attempt silent auth
+                    tokenClient.requestAccessToken({ prompt: '' });
+                }
+
+                // Load data from Google Sheets if connected
+                if (isGoogleAuthorized && accessToken) {
+                    fullSync(true);
+                } else {
+                    // Fallback to localStorage data
+                    applyFiltersAndRender();
+                    renderOutLog();
+                    updateTabBadges();
+                    populateOwnerFilter();
+                    if (allData.length === 0) {
+                        showToast('Connect Google Sheets to load data.', 'warning');
+                    }
+                }
+
+                showToast(`Welcome, ${user.name}!`, 'success');
+                return true;
+            }
+
+            function logoutUser() {
+                stopAutoSync();
+                currentUser = null;
+                loginOverlay.classList.remove('hidden');
+                appHeader.style.display = 'none';
+                tabsBar.style.display = 'none';
+                tabContentInventory.style.display = 'none';
+                tabContentOutLog.style.display = 'none';
+                allData = [];
+                outData = [];
+                applyFiltersAndRender();
+                renderOutLog();
+                sessionStorage.removeItem('warehouse_current_user');
+                showToast('Logged out.', 'warning');
+            }
+
+            function populateOwnerFilter() {
+                outOwnerFilter.innerHTML = '<option value="all">All Users</option>';
+                const owners = new Set();
+                outData.forEach(item => {
+                    if (item._ownerId) owners.add(item._ownerId);
+                });
+                USERS.forEach(user => {
+                    if (owners.has(user.id) || user.role === 'admin' || currentUser?.role === 'admin') {
+                        const opt = document.createElement('option');
+                        opt.value = user.id;
+                        opt.textContent = user.display + (user.role === 'admin' ? ' (Admin)' : '');
+                        outOwnerFilter.appendChild(opt);
+                    }
+                });
+                if (currentUser && currentUser.role !== 'admin') {
+                    outOwnerFilter.value = currentUser.id;
+                    outOwnerFilter.disabled = true;
+                } else {
+                    outOwnerFilter.disabled = false;
+                }
+            }
+
+            // =============================================================
+            // 13. AUTO-SYNC
+            // =============================================================
+            function startAutoSync() {
+                stopAutoSync();
+                syncInterval = setInterval(() => {
+                    if (currentUser && !isSyncing && isGoogleAuthorized && accessToken) {
+                        fullSync(false);
+                    }
+                }, 30000);
+                updateSyncStatus();
+            }
+
+            function stopAutoSync() {
+                if (syncInterval) {
+                    clearInterval(syncInterval);
+                    syncInterval = null;
+                }
+            }
+
+            // =============================================================
+            // 14. LOCATION RANGE
+            // =============================================================
+            function parseLocationRange(input) {
+                if (!input || !input.trim()) return [];
+                const raw = input.trim();
+                const parts = raw.split(',').map(s => s.trim()).filter(s => s);
+                const result = [];
+                for (const part of parts) {
+                    if (part.includes('-')) {
+                        const [start, end] = part.split('-').map(s => s.trim());
+                        const letterMatch = start.match(/^([A-Za-z]+)/);
+                        const startNumMatch = start.match(/(\d+)$/);
+                        const endNumMatch = end.match(/(\d+)$/);
+                        if (letterMatch && startNumMatch && endNumMatch) {
+                            const letter = letterMatch[1];
+                            const startNum = parseInt(startNumMatch[1], 10);
+                            const endNum = parseInt(endNumMatch[1], 10);
+                            const minNum = Math.min(startNum, endNum);
+                            const maxNum = Math.max(startNum, endNum);
+                            for (let i = minNum; i <= maxNum; i++) {
+                                result.push(letter + i);
+                            }
+                        }
+                    } else {
+                        result.push(part);
+                    }
+                }
+                return result;
+            }
+
+            function applyLocationRange() {
+                const raw = locationRangeInput.value;
+                locationRangeFilter = parseLocationRange(raw);
+                currentPage = 1;
+                applyFiltersAndRender();
+                const count = locationRangeFilter.length;
+                if (count > 0) {
+                    showToast(`Filtering ${count} location${count>1?'s':''}`, 'success');
+                } else if (raw.trim()) {
+                    showToast('No valid locations parsed.', 'warning');
+                }
+            }
+
+            function clearLocationRange() {
+                locationRangeInput.value = '';
+                locationRangeFilter = [];
+                currentPage = 1;
+                applyFiltersAndRender();
+                showToast('Location range cleared.', 'success');
+            }
+
+            // =============================================================
+            // 15. TOAST
+            // =============================================================
+            let toastTimer = null;
+
+            function showToast(message, type) {
+                if (toastTimer) {
+                    clearTimeout(toastTimer);
+                    toast.classList.remove('show', 'error', 'success', 'warning', 'out-toast', 'google-toast');
+                }
+                toast.textContent = message;
+                toast.className = 'toast';
+                if (type) toast.classList.add(type);
+                void toast.offsetWidth;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                    toastTimer = null;
+                }, 4000);
+            }
+
+            // =============================================================
+            // 16. FILTERING & SEARCH
+            // =============================================================
+            function matchesSearch(row, term) {
+                if (!term) return true;
+                const lower = normalize(term);
+                if (!lower) return true;
+
+                const model = normalize(row['Model Number']);
+                const itemId = normalize(row['Item ID']);
+                const pallet = normalize(row['Pallet Serial']);
+                const location = normalize(row['Location']);
+
+                if (model === lower || model.startsWith(lower) || model.includes(lower)) return true;
+                if (itemId === lower || itemId.includes(lower)) return true;
+                if (pallet === lower || pallet.includes(lower)) return true;
+                if (location.includes(lower)) return true;
+                return false;
+            }
+
+            function matchesFilters(row) {
+                if (locationRangeFilter.length > 0) {
+                    const loc = normalize(row['Location']);
+                    let found = false;
+                    for (const l of locationRangeFilter) {
+                        if (loc === normalize(l) || loc.includes(normalize(l))) { found = true; break; }
+                    }
+                    if (!found) return false;
+                }
+
+                const loc = normalize(filterLocation.value);
+                if (loc && !normalize(row['Location']).includes(loc)) return false;
+
+                const mdl = normalize(filterModel.value);
+                if (mdl && !normalize(row['Model Number']).includes(mdl)) return false;
+
+                const pb = normalize(filterPlacedBy.value);
+                if (pb && !normalize(row['Placed By']).includes(pb)) return false;
+
+                const fl = normalize(filterFloor.value);
+                if (fl && !normalize(row['Production Floor']).includes(fl)) return false;
+
+                const dept = normalize(filterDept.value);
+                if (dept && !normalize(row['Received Department']).includes(dept)) return false;
+
+                const itemId = normalize(filterItemId.value);
+                if (itemId && !normalize(row['Item ID']).includes(itemId)) return false;
+
+                const pallet = normalize(filterPallet.value);
+                if (pallet && !normalize(row['Pallet Serial']).includes(pallet)) return false;
+
+                const pFrom = filterPlaceFrom.value;
+                if (pFrom) {
+                    const d = parseDate(row['Placement Date']);
+                    const from = new Date(pFrom + 'T00:00:00');
+                    if (d && d < from) return false;
+                }
+                const pTo = filterPlaceTo.value;
+                if (pTo) {
+                    const d = parseDate(row['Placement Date']);
+                    const to = new Date(pTo + 'T23:59:59');
+                    if (d && d > to) return false;
+                }
+
+                const rFrom = filterReceiveFrom.value;
+                if (rFrom) {
+                    const d = parseDate(row['Received Date']);
+                    const from = new Date(rFrom + 'T00:00:00');
+                    if (d && d < from) return false;
+                }
+                const rTo = filterReceiveTo.value;
+                if (rTo) {
+                    const d = parseDate(row['Received Date']);
+                    const to = new Date(rTo + 'T23:59:59');
+                    if (d && d > to) return false;
+                }
+
+                const minBox = parseNumber(filterBoxMin.value);
+                const maxBox = parseNumber(filterBoxMax.value);
+                const boxes = parseNumber(row['Boxes']);
+                if (minBox > 0 && boxes < minBox) return false;
+                if (maxBox > 0 && boxes > maxBox) return false;
+
+                return true;
+            }
+
+            function applyFiltersAndRender() {
+                const term = searchInput.value;
+                searchTerm = term;
+
+                const outUIDs = new Set(outData.map(item => item._uid));
+
+                let result = allData.filter(row => {
+                    if (outUIDs.has(row._uid)) return false;
+                    return matchesSearch(row, term);
+                });
+                result = result.filter(row => matchesFilters(row));
+
+                if (showHighlightedOnly) {
+                    result = result.filter(row => highlightedSet.has(row._uid));
+                }
+
+                if (sortKey && SORTABLE_COLUMNS.includes(sortKey)) {
+                    const key = sortKey;
+                    const dir = sortDir === 'asc' ? 1 : -1;
+                    result.sort((a, b) => {
+                        const va = a[key] !== undefined ? a[key] : '';
+                        const vb = b[key] !== undefined ? b[key] : '';
+                        if (['Boxes', 'Total Items', 'Valuation', 'Carton CBM', 'Box Rate'].includes(key)) {
+                            return (parseNumber(va) - parseNumber(vb)) * dir;
+                        }
+                        if (key.includes('Date')) {
+                            const da = parseDate(va);
+                            const db = parseDate(vb);
+                            if (da && db) return (da.getTime() - db.getTime()) * dir;
+                            if (da) return -1 * dir;
+                            if (db) return 1 * dir;
+                            return String(va).localeCompare(String(vb)) * dir;
+                        }
+                        return String(va).localeCompare(String(vb)) * dir;
+                    });
+                }
+
+                filteredData = result;
+                const totalPages = Math.max(1, Math.ceil(filteredData.length / pageSize));
+                if (currentPage > totalPages) currentPage = totalPages;
+
+                updateSummary();
+                renderTable();
+                updateHighlightBadge();
+                updateOutButtonState();
+                updateTabBadges();
+                selectedUIDs.clear();
+                updateOutButtonState();
+            }
+
+            // =============================================================
+            // 17. SUMMARY
+            // =============================================================
+            function updateSummary() {
+                const total = filteredData.length;
+                let boxes = 0,
+                    items = 0,
+                    valuation = 0;
+                const modelSet = new Set();
+
+                filteredData.forEach(row => {
+                    boxes += parseNumber(row['Boxes']);
+                    items += parseNumber(row['Total Items']);
+                    valuation += parseNumber(row['Valuation']);
+                    const m = normalize(row['Model Number']);
+                    if (m) modelSet.add(m);
+                });
+
+                setSafeText(sumRecords, total);
+                setSafeText(sumBoxes, boxes.toLocaleString());
+                setSafeText(sumItems, items.toLocaleString());
+                setSafeText(sumValuation, valuation.toLocaleString(undefined, { minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 }));
+                setSafeText(sumModels, modelSet.size);
+                setSafeText(recordBadge, total + ' records');
+
+                const hlCount = highlightedSet.size;
+                setSafeText(sumHighlighted, hlCount);
+                highlightBadge.textContent = '⭐ ' + hlCount;
+                highlightBadge.style.display = hlCount > 0 ? 'inline-block' : 'none';
+
+                if (showHighlightedOnly) {
+                    highlightFilterCount.textContent = hlCount;
+                    highlightFilterCount.style.display = 'inline';
+                } else {
+                    highlightFilterCount.style.display = 'none';
+                }
+            }
+
+            function updateHighlightBadge() {
+                const hlCount = highlightedSet.size;
+                setSafeText(sumHighlighted, hlCount);
+                highlightBadge.textContent = '⭐ ' + hlCount;
+                highlightBadge.style.display = hlCount > 0 ? 'inline-block' : 'none';
+                if (showHighlightedOnly) {
+                    highlightFilterCount.textContent = hlCount;
+                    highlightFilterCount.style.display = 'inline';
+                } else {
+                    highlightFilterCount.style.display = 'none';
+                }
+            }
+
+            // =============================================================
+            // 18. RENDER TABLE
+            // =============================================================
+            function buildHeader() {
+                if (tableHead.children.length > 0) return;
+                const tr = document.createElement('tr');
+
+                const chkTh = document.createElement('th');
+                chkTh.style.cursor = 'pointer';
+                chkTh.style.textAlign = 'center';
+                chkTh.style.width = '4%';
+                chkTh.style.minWidth = '28px';
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.className = 'row-checkbox';
+                chk.setAttribute('aria-label', 'Select all');
+                chk.addEventListener('change', function() {
+                    const checked = this.checked;
+                    const rows = tableBody.querySelectorAll('tr');
+                    rows.forEach(tr => {
+                        const cb = tr.querySelector('.row-checkbox');
+                        if (cb) {
+                            cb.checked = checked;
+                            const uid = tr.dataset.uid;
+                            if (uid) {
+                                if (checked) selectedUIDs.add(uid);
+                                else selectedUIDs.delete(uid);
+                            }
+                        }
+                    });
+                    updateOutButtonState();
+                });
+                chkTh.appendChild(chk);
+                tr.appendChild(chkTh);
+
+                const numTh = document.createElement('th');
+                numTh.textContent = '#';
+                numTh.dataset.col = '#';
+                numTh.style.cursor = 'default';
+                tr.appendChild(numTh);
+
+                DISPLAY_COLUMNS.forEach(col => {
+                    if (col === '#') return;
+                    const th = document.createElement('th');
+                    th.textContent = HEADER_LABELS[col] || col;
+                    th.dataset.col = col;
+                    th.setAttribute('role', 'columnheader');
+                    th.style.cursor = 'pointer';
+                    const icon = document.createElement('span');
+                    icon.className = 'sort-icon';
+                    icon.innerHTML =
+                        '<svg viewBox="0 0 24 24" style="width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="6 9 12 15 18 9"/></svg>';
+                    th.appendChild(icon);
+                    th.addEventListener('click', function() {
+                        const key = this.dataset.col;
+                        if (sortKey === key) {
+                            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            sortKey = key;
+                            sortDir = 'asc';
+                        }
+                        document.querySelectorAll('#tableHead th').forEach(h => {
+                            h.classList.remove('sorted-asc', 'sorted-desc');
+                        });
+                        this.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                        applyFiltersAndRender();
+                    });
+                    tr.appendChild(th);
+                });
+                tableHead.appendChild(tr);
+            }
+
+            function renderTable() {
+                buildHeader();
+
+                document.querySelectorAll('#tableHead th').forEach(th => {
+                    th.classList.remove('sorted-asc', 'sorted-desc');
+                    if (th.dataset.col === sortKey) {
+                        th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    }
+                });
+
+                const total = filteredData.length;
+                const totalPages = Math.max(1, Math.ceil(total / pageSize));
+                if (currentPage > totalPages) currentPage = totalPages;
+                const start = (currentPage - 1) * pageSize;
+                const end = Math.min(start + pageSize, total);
+                const pageData = filteredData.slice(start, end);
+
+                while (tableBody.firstChild) {
+                    tableBody.removeChild(tableBody.firstChild);
+                }
+
+                if (pageData.length === 0) {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.colSpan = DISPLAY_COLUMNS.length + 2;
+                    td.className = 'empty-state';
+                    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    icon.setAttribute('viewBox', '0 0 24 24');
+                    icon.setAttribute('class', 'icon');
+                    icon.innerHTML =
+                        '<rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>';
+                    td.appendChild(icon);
+                    const p = document.createElement('p');
+                    p.textContent = showHighlightedOnly ? 'No highlighted records.' : 'No matching records.';
+                    td.appendChild(p);
+                    const sub = document.createElement('div');
+                    sub.className = 'sub';
+                    sub.textContent = locationRangeFilter.length > 0 ?
+                        `Location range: ${locationRangeFilter.join(', ')}` :
+                        'Adjust search or filters to find items.';
+                    td.appendChild(sub);
+                    tr.appendChild(td);
+                    tableBody.appendChild(tr);
+                    paginationInfo.textContent = 'Showing 0–0 of 0';
+                    pageNumbers.textContent = '1 / 1';
+                    pagePrev.disabled = true;
+                    pageNext.disabled = true;
+                    updateOutButtonState();
+                    return;
+                }
+
+                const outUIDs = new Set(outData.map(item => item._uid));
+
+                pageData.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    const globalIndex = (currentPage - 1) * pageSize + index + 1;
+                    const isHighlighted = highlightedSet.has(row._uid);
+                    const isOut = outUIDs.has(row._uid);
+                    if (isHighlighted) tr.classList.add('highlighted');
+                    if (isOut) tr.classList.add('out-row');
+                    tr.dataset.uid = row._uid;
+
+                    const chkTd = document.createElement('td');
+                    chkTd.style.textAlign = 'center';
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.className = 'row-checkbox';
+                    cb.checked = selectedUIDs.has(row._uid);
+                    cb.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const uid = tr.dataset.uid;
+                        if (uid) {
+                            if (this.checked) selectedUIDs.add(uid);
+                            else selectedUIDs.delete(uid);
+                            updateOutButtonState();
+                            updateSelectAllCheckbox();
+                        }
+                    });
+                    chkTd.appendChild(cb);
+                    tr.appendChild(chkTd);
+
+                    const numTd = document.createElement('td');
+                    numTd.textContent = globalIndex;
+                    tr.appendChild(numTd);
+
+                    DISPLAY_COLUMNS.forEach(col => {
+                        if (col === '#') return;
+                        const td = document.createElement('td');
+                        if (col === DISPLAY_COLUMNS[1] && isHighlighted) {
+                            const star = document.createElement('span');
+                            star.className = 'highlight-indicator';
+                            td.appendChild(star);
+                        }
+                        let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
+                        if (col === 'Placement Date') {
+                            val = formatShortDate(val);
+                        }
+                        td.appendChild(document.createTextNode(escapeText(val)));
+                        tr.appendChild(td);
+                    });
+
+                    tr.addEventListener('click', function(e) {
+                        if (e.target.closest('.row-checkbox')) return;
+                        if (window.getSelection().toString().length > 0) return;
+                        const uid = this.dataset.uid;
+                        if (uid) {
+                            toggleHighlightAndUpdate(uid, this);
+                        }
+                    });
+
+                    tableBody.appendChild(tr);
+                });
+
+                paginationInfo.textContent = `Showing ${start+1}–${end} of ${total}`;
+                pageNumbers.textContent = `${currentPage} / ${totalPages}`;
+                pagePrev.disabled = currentPage <= 1;
+                pageNext.disabled = currentPage >= totalPages;
+
+                updateSelectAllCheckbox();
+                updateOutButtonState();
+            }
+
+            function updateSelectAllCheckbox() {
+                const headerChk = document.querySelector('#tableHead th:first-child .row-checkbox');
+                if (!headerChk) return;
+                const rows = tableBody.querySelectorAll('tr');
+                const checkboxes = [];
+                rows.forEach(tr => {
+                    const cb = tr.querySelector('.row-checkbox');
+                    if (cb) checkboxes.push(cb);
+                });
+                if (checkboxes.length === 0) {
+                    headerChk.checked = false;
+                    headerChk.indeterminate = false;
+                    return;
+                }
+                const checked = checkboxes.filter(cb => cb.checked);
+                if (checked.length === checkboxes.length) {
+                    headerChk.checked = true;
+                    headerChk.indeterminate = false;
+                } else if (checked.length === 0) {
+                    headerChk.checked = false;
+                    headerChk.indeterminate = false;
+                } else {
+                    headerChk.checked = false;
+                    headerChk.indeterminate = true;
+                }
+            }
+
+            // =============================================================
+            // 19. HIGHLIGHT
+            // =============================================================
+            function toggleHighlightAndUpdate(uid, rowElement) {
+                if (highlightedSet.has(uid)) {
+                    highlightedSet.delete(uid);
+                } else {
+                    highlightedSet.add(uid);
+                }
+
+                if (showHighlightedOnly) {
+                    applyFiltersAndRender();
+                    return;
+                }
+
+                rowElement.classList.toggle('highlighted');
+
+                const cells = rowElement.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const palletCell = cells[2];
+                    let star = palletCell.querySelector('.highlight-indicator');
+                    if (highlightedSet.has(uid)) {
+                        if (!star) {
+                            star = document.createElement('span');
+                            star.className = 'highlight-indicator';
+                            palletCell.prepend(star);
+                        }
+                    } else {
+                        if (star) star.remove();
+                    }
+                }
+
+                updateSummary();
+                updateHighlightBadge();
+            }
+
+            function clearAllHighlights() {
+                if (highlightedSet.size === 0) {
+                    showToast('No highlights to clear.', 'warning');
+                    return;
+                }
+                highlightedSet.clear();
+                if (showHighlightedOnly) {
+                    showHighlightedOnly = false;
+                    updateHighlightBtnState();
+                }
+                applyFiltersAndRender();
+                showToast('All highlights cleared.', 'success');
+            }
+
+            function toggleShowHighlighted() {
+                showHighlightedOnly = !showHighlightedOnly;
+                currentPage = 1;
+                updateHighlightBtnState();
+                applyFiltersAndRender();
+                if (showHighlightedOnly) {
+                    showToast('Showing only highlighted records.', 'success');
+                } else {
+                    showToast('Showing all records.', 'success');
+                }
+            }
+
+            function updateHighlightBtnState() {
+                if (showHighlightedOnly) {
+                    showHighlightedBtn.classList.add('active');
+                } else {
+                    showHighlightedBtn.classList.remove('active');
+                }
+                if (showHighlightedOnly) {
+                    highlightFilterCount.textContent = highlightedSet.size;
+                    highlightFilterCount.style.display = 'inline';
+                } else {
+                    highlightFilterCount.style.display = 'none';
+                }
+            }
+
+            // =============================================================
+            // 20. OUT FUNCTIONALITY with Google Sheets Write
+            // =============================================================
+            function performOut() {
+                if (!currentUser) {
+                    showToast('Please log in first.', 'error');
+                    return;
+                }
+                if (selectedUIDs.size === 0) {
+                    showToast('No items selected.', 'warning');
+                    return;
+                }
+                if (!isGoogleAuthorized || !accessToken) {
+                    showToast('Please connect Google Sheets first.', 'warning');
+                    return;
+                }
+
+                const pickerName = currentUser.display;
+                const selectedRows = allData.filter(row => selectedUIDs.has(row._uid));
+                if (selectedRows.length === 0) {
+                    showToast('Selected items not found in inventory.', 'error');
+                    selectedUIDs.clear();
+                    updateOutButtonState();
+                    return;
+                }
+
+                const outUIDs = new Set(outData.map(item => item._uid));
+                const alreadyOut = selectedRows.filter(row => outUIDs.has(row._uid));
+                if (alreadyOut.length > 0) {
+                    showToast(`${alreadyOut.length} item(s) already out. Skipping.`, 'warning');
+                }
+
+                const toOut = selectedRows.filter(row => !outUIDs.has(row._uid));
+                if (toOut.length === 0) {
+                    showToast('All selected items are already out.', 'warning');
+                    selectedUIDs.clear();
+                    updateOutButtonState();
+                    return;
+                }
+
+                const now = formatNow();
+                const outEntries = toOut.map(row => {
+                    return {
+                        ...row,
+                        _outDate: now.date,
+                        _outTime: now.time,
+                        _outTimestamp: now.full,
+                        _outBy: pickerName,
+                        _ownerId: currentUser.id,
+                        _ownerName: currentUser.name,
+                        _outId: generateUid()
+                    };
+                });
+
+                // Add to local out data
+                outData = outData.concat(outEntries);
+                saveOutLog();
+
+                // Remove from inventory
+                const toOutUIDs = new Set(toOut.map(r => r._uid));
+                allData = allData.filter(r => !toOutUIDs.has(r._uid));
+
+                toOut.forEach(row => selectedUIDs.delete(row._uid));
+
+                // Push to Google Sheets
+                loadingOverlay.classList.add('active');
+                showToast('Syncing to Google Sheets…', 'google-toast');
+
+                // Push inventory and out log
+                pushInventoryToSheet(allData, (invWritten) => {
+                    pushOutToSheet(outData, (outWritten) => {
+                        loadingOverlay.classList.remove('active');
+                        if (invWritten && outWritten) {
+                            showToast(`${toOut.length} item(s) moved to Out Log. Synced to Google Sheets!`,
+                                'success');
+                        } else {
+                            showToast('Items moved locally but Google sync failed. Retry sync.',
+                                'warning');
+                        }
+                        applyFiltersAndRender();
+                        renderOutLog();
+                        updateTabBadges();
+                        updateOutButtonState();
+                        populateOwnerFilter();
+                    });
+                });
+            }
+
+            function restoreFromOut(outId) {
+                if (!currentUser) {
+                    showToast('Please log in first.', 'error');
+                    return;
+                }
+                if (!isGoogleAuthorized || !accessToken) {
+                    showToast('Please connect Google Sheets first.', 'warning');
+                    return;
+                }
+
+                const index = outData.findIndex(item => item._outId === outId);
+                if (index === -1) {
+                    showToast('Item not found in out log.', 'error');
+                    return;
+                }
+                const item = outData[index];
+
+                const isOwner = currentUser.role === 'admin' || item._ownerId === currentUser.id;
+                if (!isOwner) {
+                    showToast('You can only restore items you checked out.', 'error');
+                    return;
+                }
+
+                const exists = allData.some(row => row._uid === item._uid);
+                if (!exists) {
+                    const newRow = { ...item };
+                    delete newRow._outDate;
+                    delete newRow._outTime;
+                    delete newRow._outTimestamp;
+                    delete newRow._outBy;
+                    delete newRow._ownerId;
+                    delete newRow._ownerName;
+                    delete newRow._outId;
+                    allData.push(newRow);
+                }
+                outData.splice(index, 1);
+                saveOutLog();
+
+                // Push to Google Sheets
+                loadingOverlay.classList.add('active');
+                showToast('Syncing restore to Google Sheets…', 'google-toast');
+
+                pushInventoryToSheet(allData, (invWritten) => {
+                    pushOutToSheet(outData, (outWritten) => {
+                        loadingOverlay.classList.remove('active');
+                        if (invWritten && outWritten) {
+                            showToast('Item restored and synced to Google Sheets!', 'success');
+                        } else {
+                            showToast('Item restored locally but Google sync failed. Retry sync.',
+                                'warning');
+                        }
+                        applyFiltersAndRender();
+                        renderOutLog();
+                        updateTabBadges();
+                        populateOwnerFilter();
+                    });
+                });
+            }
+
+            function updateOutButtonState() {
+                const count = selectedUIDs.size;
+                outBtn.disabled = count === 0 || !currentUser || !isGoogleAuthorized;
+                if (count > 0) {
+                    outCountBadge.textContent = count;
+                    outCountBadge.style.display = 'inline';
+                } else {
+                    outCountBadge.style.display = 'none';
+                }
+                updateSelectAllCheckbox();
+            }
+
+            // =============================================================
+            // 21. OUT LOG PERSISTENCE
+            // =============================================================
+            function saveOutLog() {
+                try {
+                    localStorage.setItem('warehouse_out_log_v3', JSON.stringify(outData));
+                } catch (e) { /* ignore */ }
+            }
+
+            function loadOutLog() {
+                try {
+                    const stored = localStorage.getItem('warehouse_out_log_v3');
+                    if (stored) outData = JSON.parse(stored);
+                } catch (e) { outData = []; }
+            }
+
+            // =============================================================
+            // 22. RENDER OUT LOG
+            // =============================================================
+            function renderOutLog() {
+                let filteredOut = outData;
+
+                if (outFilterOwner !== 'all') {
+                    filteredOut = filteredOut.filter(item => item._ownerId === outFilterOwner);
+                }
+
+                const total = filteredOut.length;
+                const totalPages = Math.max(1, Math.ceil(total / outPageSize));
+                if (outCurrentPage > totalPages) outCurrentPage = totalPages;
+                const start = (outCurrentPage - 1) * outPageSize;
+                const end = Math.min(start + outPageSize, total);
+                const pageData = filteredOut.slice(start, end);
+
+                while (outLogBody.firstChild) {
+                    outLogBody.removeChild(outLogBody.firstChild);
+                }
+
+                if (pageData.length === 0) {
+                    const tr = document.createElement('tr');
+                    const td = document.createElement('td');
+                    td.colSpan = 9;
+                    td.className = 'empty-state';
+                    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    icon.setAttribute('viewBox', '0 0 24 24');
+                    icon.setAttribute('class', 'icon');
+                    icon.innerHTML =
+                        '<polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/>';
+                    td.appendChild(icon);
+                    const p = document.createElement('p');
+                    p.textContent = outFilterOwner !== 'all' ? 'No items from this user.' : 'No items have been checked out yet.';
+                    td.appendChild(p);
+                    const sub = document.createElement('div');
+                    sub.className = 'sub';
+                    sub.textContent = outFilterOwner !== 'all' ? 'Select a different user or view all.' :
+                        'Select items in Inventory and click "Out".';
+                    td.appendChild(sub);
+                    tr.appendChild(td);
+                    outLogBody.appendChild(tr);
+                } else {
+                    pageData.forEach((row, idx) => {
+                        const tr = document.createElement('tr');
+                        const globalIdx = (outCurrentPage - 1) * outPageSize + idx + 1;
+
+                        const ownerName = row._ownerName || row._outBy || 'Unknown';
+                        const isOwner = currentUser && (currentUser.role === 'admin' || row._ownerId === currentUser
+                            .id);
+
+                        const cells = [
+                            globalIdx,
+                            escapeText(row['Pallet Serial'] || ''),
+                            escapeText(row['Model Number'] || ''),
+                            parseNumber(row['Boxes']),
+                            escapeText(row['Location'] || ''),
+                            escapeText(row._outDate || ''),
+                            escapeText(row._outTime || ''),
+                            escapeText(ownerName)
+                        ];
+
+                        cells.forEach(val => {
+                            const td = document.createElement('td');
+                            td.textContent = val;
+                            tr.appendChild(td);
+                        });
+
+                        const td = document.createElement('td');
+                        td.style.textAlign = 'center';
+                        const btn = document.createElement('button');
+                        btn.className = 'restore-btn';
+                        if (isOwner) {
+                            btn.classList.add('owner-btn');
+                            btn.textContent = '↩ Restore';
+                            btn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                restoreFromOut(row._outId);
+                            });
+                        } else {
+                            btn.classList.add('other-btn');
+                            btn.textContent = '🔒 Locked';
+                            btn.title = 'Only the owner or admin can restore this item';
+                        }
+                        td.appendChild(btn);
+                        tr.appendChild(td);
+
+                        outLogBody.appendChild(tr);
+                    });
+                }
+
+                let outBoxes = 0,
+                    outItems = 0,
+                    outValuation = 0;
+                const outModelSet = new Set();
+                filteredOut.forEach(row => {
+                    outBoxes += parseNumber(row['Boxes']);
+                    outItems += parseNumber(row['Total Items']);
+                    outValuation += parseNumber(row['Valuation']);
+                    const m = normalize(row['Model Number']);
+                    if (m) outModelSet.add(m);
+                });
+                setSafeText(outTotalCount, filteredOut.length);
+                setSafeText(outBoxesTotal, outBoxes.toLocaleString());
+                setSafeText(outItemsTotal, outItems.toLocaleString());
+                setSafeText(outValuationTotal, outValuation.toLocaleString(undefined, { minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 }));
+                setSafeText(outModelsTotal, outModelSet.size);
+
+                outPaginationInfo.textContent = `Showing ${start+1}–${end} of ${total}`;
+                outPageNumbers.textContent = `${outCurrentPage} / ${totalPages}`;
+                outPagePrev.disabled = outCurrentPage <= 1;
+                outPageNext.disabled = outCurrentPage >= totalPages;
+
+                outTabBadge.textContent = outData.length;
+                populateOwnerFilter();
+            }
+
+            // =============================================================
+            // 23. TABS
+            // =============================================================
+            function switchTab(tab) {
+                const isInventory = tab === 'inventory';
+                tabContentInventory.style.display = isInventory ? 'flex' : 'none';
+                tabContentOutLog.style.display = isInventory ? 'none' : 'flex';
+                tabInventory.classList.toggle('active', isInventory);
+                tabOutLog.classList.toggle('active', !isInventory);
+                if (!isInventory) renderOutLog();
+            }
+
+            function updateTabBadges() {
+                const outUIDs = new Set(outData.map(item => item._uid));
+                const available = allData.filter(row => !outUIDs.has(row._uid)).length;
+                invTabBadge.textContent = available;
+                outTabBadge.textContent = outData.length;
+            }
+
+            // =============================================================
+            // 24. EXPORT
+            // =============================================================
+            function exportData(format) {
+                if (!currentUser) {
+                    showToast('Please log in first.', 'error');
+                    return;
+                }
+
+                switch (format) {
+                    case 'inventory':
+                        exportInventoryReport();
+                        break;
+                    case 'highlighted':
+                        exportHighlightedReport();
+                        break;
+                    case 'summary':
+                        exportSummaryReport();
+                        break;
+                    case 'outlog-all':
+                        exportOutLogAll();
+                        break;
+                    case 'outlog-user':
+                        exportOutLogPerUser();
+                        break;
+                    case 'print':
+                        printView();
+                        break;
+                    default:
+                        showToast('Unknown export format.', 'error');
+                }
+            }
+
+            function exportInventoryReport() {
+                const data = filteredData.length > 0 ? filteredData : allData;
+                if (data.length === 0) { showToast('No data to export.', 'warning'); return; }
+                const rows = data.map((row, idx) => {
+                    const obj = { '#': idx + 1 };
+                    DISPLAY_COLUMNS.forEach(col => {
+                        if (col === '#') return;
+                        const label = HEADER_LABELS[col] || col;
+                        let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
+                        if (col === 'Placement Date') val = formatShortDate(val);
+                        if (typeof val === 'string' && /^[=+\-@]/.test(val)) val = "'" + val;
+                        obj[label] = val;
+                    });
+                    obj['Valuation'] = parseNumber(row['Valuation']).toFixed(2);
+                    obj['Total Items'] = parseNumber(row['Total Items']);
+                    obj['⭐ Highlighted'] = highlightedSet.has(row._uid) ? 'Yes' : 'No';
+                    return obj;
+                });
+                downloadExcel(rows, 'inventory_report');
+                showToast(`Exported ${rows.length} inventory records.`, 'success');
+            }
+
+            function exportHighlightedReport() {
+                const data = allData.filter(row => highlightedSet.has(row._uid));
+                if (data.length === 0) { showToast('No highlighted records.', 'warning'); return; }
+                const rows = data.map((row, idx) => {
+                    const obj = { '#': idx + 1 };
+                    DISPLAY_COLUMNS.forEach(col => {
+                        if (col === '#') return;
+                        const label = HEADER_LABELS[col] || col;
+                        let val = row[col] !== undefined && row[col] !== null ? row[col] : '';
+                        if (col === 'Placement Date') val = formatShortDate(val);
+                        if (typeof val === 'string' && /^[=+\-@]/.test(val)) val = "'" + val;
+                        obj[label] = val;
+                    });
+                    obj['Valuation'] = parseNumber(row['Valuation']).toFixed(2);
+                    obj['Total Items'] = parseNumber(row['Total Items']);
+                    return obj;
+                });
+                downloadExcel(rows, 'highlighted_report');
+                showToast(`Exported ${rows.length} highlighted records.`, 'success');
+            }
+
+            function exportSummaryReport() {
+                const modelMap = {};
+                const outUIDs = new Set(outData.map(item => item._uid));
+                const items = allData.filter(row => !outUIDs.has(row._uid));
+                items.forEach(row => {
+                    const model = escapeText(row['Model Number'] || 'Unknown');
+                    if (!modelMap[model]) {
+                        modelMap[model] = { model, boxes: 0, items: 0, valuation: 0, locations: new Set() };
+                    }
+                    modelMap[model].boxes += parseNumber(row['Boxes']);
+                    modelMap[model].items += parseNumber(row['Total Items']);
+                    modelMap[model].valuation += parseNumber(row['Valuation']);
+                    if (row['Location']) modelMap[model].locations.add(escapeText(row['Location']));
+                });
+                const rows = Object.values(modelMap).map(m => ({
+                    'Model': m.model,
+                    'Total Boxes': m.boxes,
+                    'Total Items': m.items,
+                    'Valuation': m.valuation.toFixed(2),
+                    'Locations': Array.from(m.locations).join(', ')
+                }));
+                let tb = 0,
+                    ti = 0,
+                    tv = 0;
+                items.forEach(row => { tb += parseNumber(row['Boxes']);
+                    ti += parseNumber(row['Total Items']);
+                    tv += parseNumber(row['Valuation']); });
+                rows.push({ 'Model': '=== TOTALS ===', 'Total Boxes': tb, 'Total Items': ti, 'Valuation': tv.toFixed(2),
+                    'Locations': '--' });
+                if (rows.length <= 1) { showToast('No data for summary.', 'warning'); return; }
+                downloadExcel(rows, 'summary_log');
+                showToast('Summary log exported.', 'success');
+            }
+
+            function exportOutLogAll() {
+                if (outData.length === 0) { showToast('No out entries.', 'warning'); return; }
+                const rows = outData.map((row, idx) => ({
+                    '#': idx + 1,
+                    'Pallet': escapeText(row['Pallet Serial'] || ''),
+                    'Model': escapeText(row['Model Number'] || ''),
+                    'Boxes': parseNumber(row['Boxes']),
+                    'Location': escapeText(row['Location'] || ''),
+                    'Out Date': escapeText(row._outDate || ''),
+                    'Out Time': escapeText(row._outTime || ''),
+                    'Owner': escapeText(row._ownerName || row._outBy || 'Unknown'),
+                    'Valuation': parseNumber(row['Valuation']).toFixed(2)
+                }));
+                downloadExcel(rows, 'out_log_all');
+                showToast(`Exported ${rows.length} out entries.`, 'success');
+            }
+
+            function exportOutLogPerUser() {
+                if (outData.length === 0) { showToast('No out entries.', 'warning'); return; }
+                const wb = XLSX.utils.book_new();
+                const users = [...new Set(outData.map(item => item._ownerId || 'unknown'))];
+                users.forEach(userId => {
+                    const user = USERS.find(u => u.id === userId);
+                    const userRows = outData.filter(item => (item._ownerId || 'unknown') === userId);
+                    const rows = userRows.map((row, idx) => ({
+                        '#': idx + 1,
+                        'Pallet': escapeText(row['Pallet Serial'] || ''),
+                        'Model': escapeText(row['Model Number'] || ''),
+                        'Boxes': parseNumber(row['Boxes']),
+                        'Location': escapeText(row['Location'] || ''),
+                        'Out Date': escapeText(row._outDate || ''),
+                        'Out Time': escapeText(row._outTime || ''),
+                        'Valuation': parseNumber(row['Valuation']).toFixed(2)
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(rows);
+                    const name = user ? user.display.replace(/\s/g, '_') : userId;
+                    XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
+                });
+                const summary = users.map(userId => {
+                    const user = USERS.find(u => u.id === userId);
+                    const items = outData.filter(item => (item._ownerId || 'unknown') === userId);
+                    let boxes = 0,
+                        val = 0;
+                    items.forEach(r => { boxes += parseNumber(r['Boxes']);
+                        val += parseNumber(r['Valuation']); });
+                    return {
+                        'User': user ? user.display : userId,
+                        'Total Items': items.length,
+                        'Total Boxes': boxes,
+                        'Total Valuation': val.toFixed(2)
+                    };
+                });
+                const wsSum = XLSX.utils.json_to_sheet(summary);
+                XLSX.utils.book_append_sheet(wb, wsSum, 'Summary');
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `out_log_per_user_${new Date().toISOString().slice(0,10)}.xlsx`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast(`Exported out logs per user (${users.length} users).`, 'success');
+            }
+
+            function printView() {
+                const win = window.open('', '_blank');
+                if (!win) { showToast('Please allow popups for printing.', 'error'); return; }
+                const data = filteredData.length > 0 ? filteredData : allData;
+                let html = '<html><head><title>Warehouse Report</title><style>' +
+                    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px;margin:0;}' +
+                    'h1{font-size:24px;margin-bottom:4px;}' +
+                    '.sub{color:#555;margin-bottom:16px;font-size:14px;}' +
+                    'table{width:100%;border-collapse:collapse;font-size:12px;}' +
+                    'th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;white-space:nowrap;}' +
+                    'th{background:#0b1424;color:#fff;font-weight:600;}' +
+                    'tr.highlight-row{background:#fef9e7;}' +
+                    '.footer{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;text-align:center;font-size:10px;color:#888;}' +
+                    '@media print{body{padding:10px;}th,td{padding:4px 6px;}}' +
+                    '</style></head><body>';
+                html += `<h1>Warehouse Inventory Report</h1>`;
+                html +=
+                    `<div class="sub">Generated: ${new Date().toLocaleString()} · ${data.length} records · User: ${currentUser.display}</div>`;
+                const headers = ['#', 'Pallet', 'Model', 'Boxes', 'Location', 'Date', 'Time'];
+                html += `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                data.forEach((row, idx) => {
+                    const isHl = highlightedSet.has(row._uid);
+                    const cls = isHl ? ' class="highlight-row"' : '';
+                    const vals = [
+                        idx + 1,
+                        escapeText(row['Pallet Serial']),
+                        escapeText(row['Model Number']),
+                        parseNumber(row['Boxes']),
+                        escapeText(row['Location']),
+                        formatShortDate(row['Placement Date']),
+                        escapeText(row['Placement Time'])
+                    ];
+                    html += '<tr' + cls + '>' + vals.map(v => `<td>${v}</td>`).join('') + '</tr>';
+                });
+                html += '</tbody></table>';
+                html += `<div class="footer">Warehouse Inventory System · ${currentUser.display}</div>`;
+                html += '</body></html>';
+                win.document.write(html);
+                win.document.close();
+                setTimeout(() => win.print(), 500);
+            }
+
+            function downloadExcel(data, filename) {
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            // =============================================================
+            // 25. CLEAR FILTERS
+            // =============================================================
+            function clearFilterInputs() {
+                filterLocation.value = '';
+                filterModel.value = '';
+                filterPlacedBy.value = '';
+                filterFloor.value = '';
+                filterDept.value = '';
+                filterItemId.value = '';
+                filterPallet.value = '';
+                filterPlaceFrom.value = '';
+                filterPlaceTo.value = '';
+                filterReceiveFrom.value = '';
+                filterReceiveTo.value = '';
+                filterBoxMin.value = '';
+                filterBoxMax.value = '';
+                locationRangeFilter = [];
+                locationRangeInput.value = '';
+            }
+
+            // =============================================================
+            // 26. DEBOUNCE
+            // =============================================================
+            function debounce(fn, ms) {
+                let timer;
+                return function(...args) {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fn.apply(this, args), ms);
+                };
+            }
+
+            // =============================================================
+            // 27. INIT
+            // =============================================================
+            function init() {
+                loadOutLog();
+
+                // Init Google Auth
+                initGoogleAuth();
+
+                // Login form
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value.trim();
+                    if (!username || !password) {
+                        loginError.textContent = 'Please enter both username and password.';
+                        return;
+                    }
+                    loginUser(username, password);
+                });
+
+                passwordInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        loginForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+
+                refreshBtn.addEventListener('click', function() {
+                    if (currentUser && isGoogleAuthorized) {
+                        fullSync(true);
+                    } else {
+                        showToast('Please connect Google Sheets first.', 'warning');
+                    }
+                });
+
+                logoutBtn.addEventListener('click', function() {
+                    logoutUser();
+                });
+
+                // Check for saved session
+                const savedUser = sessionStorage.getItem('warehouse_current_user');
+                if (savedUser) {
+                    const user = USERS.find(u => u.id === savedUser);
+                    if (user) {
+                        currentUser = user;
+                        loginOverlay.classList.add('hidden');
+                        appHeader.style.display = 'flex';
+                        tabsBar.style.display = 'flex';
+                        tabContentInventory.style.display = 'flex';
+                        tabContentOutLog.style.display = 'flex';
+
+                        currentUserDisplay.textContent = user.display;
+                        currentRoleDisplay.textContent = user.role === 'admin' ? '🔑 Admin' : '📦 Picker';
+                        currentRoleDisplay.className = 'user-role' + (user.role === 'admin' ? ' admin-role' : '');
+
+                        if (user.role === 'admin') {
+                            outOwnerFilter.disabled = false;
+                        } else {
+                            outOwnerFilter.value = user.id;
+                            outOwnerFilter.disabled = true;
+                        }
+
+                        populateOwnerFilter();
+                        loadOutLog();
+                        startAutoSync();
+
+                        // Try to connect Google
+                        if (tokenClient) {
+                            tokenClient.requestAccessToken({ prompt: '' });
+                        }
+
+                        // Load data
+                        if (isGoogleAuthorized && accessToken) {
+                            fullSync(true);
+                        } else {
+                            applyFiltersAndRender();
+                            renderOutLog();
+                            updateTabBadges();
+                            populateOwnerFilter();
+                            showToast('Connect Google Sheets to sync data.', 'warning');
+                        }
+
+                        showToast(`Welcome back, ${user.name}!`, 'success');
+                        return;
+                    }
+                }
+
+                // Show login
+                loginOverlay.classList.remove('hidden');
+
+                // UI Event listeners
+                searchInput.addEventListener('input', debounce(() => {
+                    currentPage = 1;
+                    applyFiltersAndRender();
+                }, 200));
+
+                const filterInputs = [
+                    filterLocation, filterModel, filterPlacedBy, filterFloor, filterDept,
+                    filterItemId, filterPallet,
+                    filterPlaceFrom, filterPlaceTo, filterReceiveFrom, filterReceiveTo,
+                    filterBoxMin, filterBoxMax
+                ];
+                filterInputs.forEach(inp => {
+                    inp.addEventListener('input', debounce(() => {
+                        currentPage = 1;
+                        applyFiltersAndRender();
+                    }, 150));
+                    inp.addEventListener('change', () => {
+                        currentPage = 1;
+                        applyFiltersAndRender();
+                    });
+                });
+
+                locationRangeGoBtn.addEventListener('click', applyLocationRange);
+                locationRangeInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault();
+                        applyLocationRange(); }
+                });
+                locationRangeClearBtn.addEventListener('click', clearLocationRange);
+
+                let filtersVisible = true;
+                toggleFiltersBtn.addEventListener('click', function() {
+                    filtersVisible = !filtersVisible;
+                    filtersSection.classList.toggle('collapsed', !filtersVisible);
+                });
+
+                clearFiltersBtn.addEventListener('click', function() {
+                    clearFilterInputs();
+                    searchInput.value = '';
+                    searchTerm = '';
+                    sortKey = null;
+                    sortDir = 'asc';
+                    currentPage = 1;
+                    applyFiltersAndRender();
+                    showToast('Filters cleared.', 'success');
+                });
+
+                clearHighlightsBtn.addEventListener('click', clearAllHighlights);
+                showHighlightedBtn.addEventListener('click', toggleShowHighlighted);
+
+                pagePrev.addEventListener('click', function() {
+                    if (currentPage > 1) { currentPage--;
+                        renderTable(); }
+                });
+                pageNext.addEventListener('click', function() {
+                    const totalPages = Math.ceil(filteredData.length / pageSize);
+                    if (currentPage < totalPages) { currentPage++;
+                        renderTable(); }
+                });
+                pageSizeSelect.addEventListener('change', function() {
+                    pageSize = parseInt(this.value, 10);
+                    currentPage = 1;
+                    renderTable();
+                });
+
+                outPagePrev.addEventListener('click', function() {
+                    if (outCurrentPage > 1) { outCurrentPage--;
+                        renderOutLog(); }
+                });
+                outPageNext.addEventListener('click', function() {
+                    const totalPages = Math.ceil(outData.length / outPageSize);
+                    if (outCurrentPage < totalPages) { outCurrentPage++;
+                        renderOutLog(); }
+                });
+                outPageSizeSelect.addEventListener('change', function() {
+                    outPageSize = parseInt(this.value, 10);
+                    outCurrentPage = 1;
+                    renderOutLog();
+                });
+
+                outOwnerFilter.addEventListener('change', function() {
+                    outFilterOwner = this.value;
+                    outCurrentPage = 1;
+                    renderOutLog();
+                });
+
+                outBtn.addEventListener('click', performOut);
+
+                tabInventory.addEventListener('click', () => switchTab('inventory'));
+                tabOutLog.addEventListener('click', () => switchTab('outlog'));
+
+                exportBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    exportMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function() {
+                    exportMenu.classList.remove('show');
+                });
+                exportMenu.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const format = this.dataset.format;
+                        exportData(format);
+                        exportMenu.classList.remove('show');
+                    });
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        searchInput.focus();
+                        searchInput.select();
+                    }
+                    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'H' || e.key === 'h')) {
+                        e.preventDefault();
+                        toggleShowHighlighted();
+                    }
+                    if (e.key === 'Escape') {
+                        if (document.activeElement === searchInput) searchInput.blur();
+                    }
+                });
+
+                console.log('🏭 Warehouse Inventory v12.0 · Full OAuth2 Google Sheets Integration');
+                console.log('⚠️ Remember to set your Google Client ID in the CONFIG section!');
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+</body>
+</html>

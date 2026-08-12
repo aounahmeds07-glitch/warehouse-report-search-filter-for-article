@@ -321,6 +321,113 @@
             flex-wrap: wrap;
         }
 
+        /* ===== LOGIN OVERLAY ===== */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 24px;
+            transition: opacity 0.5s ease;
+        }
+        .login-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .login-box {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 36px 40px 32px;
+            max-width: 420px;
+            width: 92%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .login-box .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 4px;
+        }
+        .login-box .logo span {
+            color: var(--color-accent);
+        }
+        .login-box .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+        }
+        .login-box .user-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .login-box .user-btn {
+            padding: 10px 8px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-bg);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--color-text);
+            text-align: center;
+        }
+        .login-box .user-btn:hover {
+            border-color: var(--color-accent);
+            background: var(--color-accent-light);
+            transform: translateY(-2px);
+        }
+        .login-box .user-btn .role-tag {
+            display: block;
+            font-size: 0.5rem;
+            font-weight: 400;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
+        .login-box .user-btn.admin-btn {
+            border-color: #7c3aed;
+            background: #ede9fe;
+        }
+        .login-box .user-btn.admin-btn:hover {
+            border-color: #5b21b6;
+            background: #ddd6fe;
+        }
+        .login-box .user-btn .badge {
+            background: var(--color-accent);
+            color: #fff;
+            font-size: 0.45rem;
+            padding: 0 6px;
+            border-radius: 20px;
+            margin-left: 4px;
+        }
+        .login-box .user-btn .badge.admin-badge {
+            background: #7c3aed;
+        }
+        .login-box .user-id-display {
+            font-size: 0.6rem;
+            color: var(--color-text-muted);
+            margin-top: 12px;
+            border-top: 1px solid var(--color-border-light);
+            padding-top: 12px;
+        }
+        .login-box .user-id-display strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
         /* ===== TABS ===== */
         .tabs-bar {
             display: flex;
@@ -334,36 +441,51 @@
         .tabs-bar .tab-spacer {
             flex: 1;
         }
-        .tabs-bar .picker-name-wrap {
+        .tabs-bar .user-info-wrap {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 0.7rem;
             color: var(--color-text-secondary);
             padding: 4px 0;
         }
-        .tabs-bar .picker-name-wrap input {
-            padding: 3px 8px;
-            border: 1.5px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            font-size: 0.7rem;
-            font-family: var(--font);
-            background: var(--color-bg);
-            color: var(--color-text);
-            outline: none;
-            width: 120px;
-            height: 28px;
-        }
-        .tabs-bar .picker-name-wrap input:focus {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(74, 140, 247, 0.15);
-        }
-        .tabs-bar .picker-name-wrap label {
+        .tabs-bar .user-info-wrap .user-name {
             font-weight: 600;
-            font-size: 0.6rem;
+            color: var(--color-text);
+            background: var(--color-accent-light);
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+        }
+        .tabs-bar .user-info-wrap .user-role {
+            font-size: 0.55rem;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             color: var(--color-text-muted);
+            background: var(--color-bg);
+            padding: 1px 10px;
+            border-radius: 20px;
+        }
+        .tabs-bar .user-info-wrap .user-role.admin-role {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+        .tabs-bar .user-info-wrap .logout-btn {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 2px 10px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            transition: var(--transition);
+            font-family: var(--font);
+            height: 24px;
+        }
+        .tabs-bar .user-info-wrap .logout-btn:hover {
+            background: var(--color-danger);
+            color: #fff;
+            border-color: var(--color-danger);
         }
 
         /* ===== SEARCH BAR ===== */
@@ -933,6 +1055,42 @@
             background: var(--color-out);
             color: #fff;
         }
+        #outLogTable .restore-btn.owner-btn {
+            border-color: var(--color-success);
+            color: var(--color-success);
+        }
+        #outLogTable .restore-btn.owner-btn:hover {
+            background: var(--color-success);
+            color: #fff;
+        }
+        #outLogTable .restore-btn.other-btn {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #outLogTable .owner-badge {
+            display: inline-block;
+            background: var(--color-out-light);
+            color: #5b21b6;
+            font-size: 0.5rem;
+            padding: 1px 6px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .out-owner-filter {
+            padding: 4px 8px;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.65rem;
+            font-family: var(--font);
+            background: var(--color-bg);
+            color: var(--color-text);
+            outline: none;
+            height: 28px;
+            min-width: 100px;
+        }
+        .out-owner-filter:focus {
+            border-color: var(--color-accent);
+        }
 
         /* ===== TOAST ===== */
         .toast {
@@ -1236,13 +1394,17 @@
             .search-hint {
                 display: none;
             }
-            .tabs-bar .picker-name-wrap input {
-                width: 80px;
+            .tabs-bar .user-info-wrap {
                 font-size: 0.6rem;
-                height: 24px;
             }
-            .tabs-bar .picker-name-wrap label {
+            .tabs-bar .user-info-wrap .user-name {
+                font-size: 0.55rem;
+                padding: 1px 8px;
+            }
+            .tabs-bar .user-info-wrap .logout-btn {
                 font-size: 0.5rem;
+                padding: 1px 6px;
+                height: 20px;
             }
             .btn-tab {
                 font-size: 0.65rem;
@@ -1291,6 +1453,17 @@
             .out-summary-bar {
                 padding: 4px 14px;
                 gap: 2px 12px;
+            }
+            .login-box {
+                padding: 24px 20px;
+            }
+            .login-box .user-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .login-box .user-btn {
+                font-size: 0.65rem;
+                padding: 8px 6px;
             }
         }
 
@@ -1364,14 +1537,17 @@
                 font-size: 0.45rem;
                 padding: 0 4px;
             }
-            .tabs-bar .picker-name-wrap input {
-                width: 60px;
-                font-size: 0.55rem;
-                height: 20px;
-                padding: 1px 4px;
+            .tabs-bar .user-info-wrap {
+                font-size: 0.5rem;
             }
-            .tabs-bar .picker-name-wrap label {
+            .tabs-bar .user-info-wrap .user-name {
+                font-size: 0.5rem;
+                padding: 1px 6px;
+            }
+            .tabs-bar .user-info-wrap .logout-btn {
                 font-size: 0.45rem;
+                padding: 1px 4px;
+                height: 18px;
             }
             .summary-item .value {
                 font-size: 0.6rem;
@@ -1436,6 +1612,29 @@
                 padding: 1px 6px;
                 height: 20px;
             }
+            .login-box {
+                padding: 20px 16px;
+            }
+            .login-box .logo {
+                font-size: 1.2rem;
+            }
+            .login-box .user-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+            }
+            .login-box .user-btn {
+                font-size: 0.6rem;
+                padding: 6px 4px;
+            }
+            .login-box .user-btn .role-tag {
+                font-size: 0.45rem;
+            }
+            .out-owner-filter {
+                font-size: 0.55rem;
+                height: 24px;
+                min-width: 70px;
+                padding: 2px 4px;
+            }
         }
 
         .btn:focus-visible,
@@ -1455,7 +1654,6 @@
             border: 0;
         }
 
-        /* refresh button */
         .btn-refresh {
             background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.85);
@@ -1477,8 +1675,25 @@
 </head>
 <body>
 
+    <!-- ===== LOGIN OVERLAY ===== -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="logo">
+                <svg class="icon" viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--color-accent);"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Ware<span>House</span>
+            </div>
+            <div class="subtitle">Inventory Picker System · Select your account</div>
+            <div class="user-grid" id="userGrid">
+                <!-- Users will be rendered here -->
+            </div>
+            <div class="user-id-display">
+                <span id="loginHint">Click a user above to log in</span>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== HEADER ===== -->
-    <header class="app-header no-print">
+    <header class="app-header no-print" id="appHeader" style="display:none;">
         <div class="header-left">
             <div class="logo">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -1542,7 +1757,7 @@
     </header>
 
     <!-- ===== TABS ===== -->
-    <div class="tabs-bar no-print">
+    <div class="tabs-bar no-print" id="tabsBar" style="display:none;">
         <button class="btn-tab active" data-tab="inventory" id="tabInventory">
             <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             Inventory
@@ -1554,16 +1769,17 @@
             <span class="badge-tab out-badge" id="outTabBadge">0</span>
         </button>
         <div class="tab-spacer"></div>
-        <div class="picker-name-wrap">
-            <label for="pickerNameInput">Picker</label>
-            <input type="text" id="pickerNameInput" placeholder="Your name" value="Picker" />
+        <div class="user-info-wrap">
+            <span class="user-name" id="currentUserDisplay">User</span>
+            <span class="user-role" id="currentRoleDisplay">Role</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
     </div>
 
     <!-- ================================================================ -->
     <!-- TAB 1: INVENTORY                                                 -->
     <!-- ================================================================ -->
-    <div class="tab-content active" id="tabContentInventory">
+    <div class="tab-content active" id="tabContentInventory" style="display:none;">
 
         <!-- SEARCH -->
         <section class="search-bar no-print">
@@ -1674,7 +1890,7 @@
     <!-- ================================================================ -->
     <!-- TAB 2: OUT LOG                                                   -->
     <!-- ================================================================ -->
-    <div class="tab-content" id="tabContentOutLog">
+    <div class="tab-content" id="tabContentOutLog" style="display:none;">
 
         <!-- Out Summary -->
         <div class="out-summary-bar no-print" id="outSummarySection">
@@ -1698,6 +1914,12 @@
                 <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                 <span class="label">Models Out</span><span class="value out-value" id="outModelsTotal">0</span>
             </div>
+            <div class="summary-item" style="margin-left:auto;">
+                <label for="outOwnerFilter" style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--color-text-muted);">Filter by User</label>
+                <select id="outOwnerFilter" class="out-owner-filter">
+                    <option value="all">All Users</option>
+                </select>
+            </div>
         </div>
 
         <!-- Out Log Table -->
@@ -1713,7 +1935,7 @@
                             <th>Location</th>
                             <th>Out Date</th>
                             <th>Out Time</th>
-                            <th>Picker</th>
+                            <th>Owner</th>
                             <th style="text-align:center;width:70px;">Restore</th>
                         </tr>
                     </thead>
@@ -1752,16 +1974,64 @@
 
     <script>
         // ================================================================
-        //  WAREHOUSE INVENTORY + PICKER SYSTEM — v9.0
-        //  Google Sheets sync · Full reporting · No import
+        //  WAREHOUSE INVENTORY + PICKER SYSTEM — v10.0
+        //  Full User System with 4 users + Admin · Ownership tracking
         // ================================================================
 
         (function() {
             'use strict';
 
             // =============================================================
-            // 1. DOM REFS
+            // 1. USER SYSTEM
             // =============================================================
+            const USERS = [{
+                id: 'user1',
+                name: 'Alice Johnson',
+                role: 'picker',
+                display: 'Alice J.',
+                color: '#4f8cff'
+            }, {
+                id: 'user2',
+                name: 'Bob Smith',
+                role: 'picker',
+                display: 'Bob S.',
+                color: '#22c55e'
+            }, {
+                id: 'user3',
+                name: 'Carol White',
+                role: 'picker',
+                display: 'Carol W.',
+                color: '#f59e0b'
+            }, {
+                id: 'user4',
+                name: 'Dave Brown',
+                role: 'picker',
+                display: 'Dave B.',
+                color: '#ef4444'
+            }, {
+                id: 'admin',
+                name: 'Administrator',
+                role: 'admin',
+                display: 'Admin',
+                color: '#7c3aed'
+            }];
+
+            let currentUser = null;
+
+            // =============================================================
+            // 2. DOM REFS
+            // =============================================================
+            const loginOverlay = document.getElementById('loginOverlay');
+            const userGrid = document.getElementById('userGrid');
+            const loginHint = document.getElementById('loginHint');
+            const appHeader = document.getElementById('appHeader');
+            const tabsBar = document.getElementById('tabsBar');
+            const tabContentInventory = document.getElementById('tabContentInventory');
+            const tabContentOutLog = document.getElementById('tabContentOutLog');
+            const currentUserDisplay = document.getElementById('currentUserDisplay');
+            const currentRoleDisplay = document.getElementById('currentRoleDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+
             const refreshBtn = document.getElementById('refreshBtn');
             const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
             const clearFiltersBtn = document.getElementById('clearFiltersBtn');
@@ -1793,8 +2063,6 @@
             // Tabs
             const tabInventory = document.getElementById('tabInventory');
             const tabOutLog = document.getElementById('tabOutLog');
-            const tabContentInventory = document.getElementById('tabContentInventory');
-            const tabContentOutLog = document.getElementById('tabContentOutLog');
             const invTabBadge = document.getElementById('invTabBadge');
             const outTabBadge = document.getElementById('outTabBadge');
 
@@ -1810,13 +2078,11 @@
             const outPagePrev = document.getElementById('outPagePrev');
             const outPageNext = document.getElementById('outPageNext');
             const outPageSizeSelect = document.getElementById('outPageSizeSelect');
+            const outOwnerFilter = document.getElementById('outOwnerFilter');
 
             // Out button
             const outBtn = document.getElementById('outBtn');
             const outCountBadge = document.getElementById('outCountBadge');
-
-            // Picker name
-            const pickerNameInput = document.getElementById('pickerNameInput');
 
             // Location range
             const locationRangeInput = document.getElementById('locationRangeInput');
@@ -1839,7 +2105,7 @@
             const filterBoxMax = document.getElementById('filterBoxMax');
 
             // =============================================================
-            // 2. STATE
+            // 3. STATE
             // =============================================================
             let allData = [];
             let filteredData = [];
@@ -1854,12 +2120,13 @@
             let outData = [];
             let outCurrentPage = 1;
             let outPageSize = 50;
+            let outFilterOwner = 'all';
 
             let selectedUIDs = new Set();
             let locationRangeFilter = [];
 
             // =============================================================
-            // 3. CONSTANTS
+            // 4. CONSTANTS
             // =============================================================
             const ALL_COLUMNS = [
                 'Location', 'Model Number', 'Boxes', 'Items/Box', 'Total Items',
@@ -1891,11 +2158,10 @@
 
             const SORTABLE_COLUMNS = DISPLAY_COLUMNS.filter(c => c !== '#');
 
-            // Hardcoded Google Sheet ID
             const GOOGLE_SHEET_ID = '1isK2xGNTWq98D3QyqYekJXBw2h3AxLIE5KdVLo_jHJ0';
 
             // =============================================================
-            // 4. UTILITIES
+            // 5. UTILITIES
             // =============================================================
             function escapeText(str) {
                 if (str === undefined || str === null || str === '') return '';
@@ -1979,9 +2245,87 @@
             }
 
             // =============================================================
-            // 5. GOOGLE SHEETS SYNC (hardcoded ID)
+            // 6. USER MANAGEMENT
+            // =============================================================
+            function renderLoginScreen() {
+                userGrid.innerHTML = '';
+                USERS.forEach(user => {
+                    const btn = document.createElement('button');
+                    btn.className = 'user-btn' + (user.role === 'admin' ? ' admin-btn' : '');
+                    btn.style.borderColor = user.color + '55';
+                    const isAdmin = user.role === 'admin';
+                    btn.innerHTML = `
+                        <div>${user.display}</div>
+                        <span class="role-tag">${isAdmin ? '🔑 Admin' : '📦 Picker'}</span>
+                        <span class="badge ${isAdmin ? 'admin-badge' : ''}">${user.id}</span>
+                    `;
+                    btn.addEventListener('click', () => loginUser(user.id));
+                    userGrid.appendChild(btn);
+                });
+            }
+
+            function loginUser(userId) {
+                const user = USERS.find(u => u.id === userId);
+                if (!user) {
+                    showToast('User not found.', 'error');
+                    return;
+                }
+                currentUser = user;
+                loginOverlay.classList.add('hidden');
+                appHeader.style.display = 'flex';
+                tabsBar.style.display = 'flex';
+                tabContentInventory.style.display = 'flex';
+                tabContentOutLog.style.display = 'flex';
+
+                currentUserDisplay.textContent = user.display;
+                currentRoleDisplay.textContent = user.role === 'admin' ? '🔑 Admin' : '📦 Picker';
+                currentRoleDisplay.className = 'user-role' + (user.role === 'admin' ? ' admin-role' : '');
+
+                // Populate owner filter
+                populateOwnerFilter();
+
+                // Load data
+                syncGoogleSheet(true);
+
+                showToast(`Welcome, ${user.name}!`, 'success');
+            }
+
+            function logoutUser() {
+                currentUser = null;
+                loginOverlay.classList.remove('hidden');
+                appHeader.style.display = 'none';
+                tabsBar.style.display = 'none';
+                tabContentInventory.style.display = 'none';
+                tabContentOutLog.style.display = 'none';
+                // Reset data
+                allData = [];
+                outData = [];
+                applyFiltersAndRender();
+                renderOutLog();
+                showToast('Logged out.', 'warning');
+            }
+
+            function populateOwnerFilter() {
+                outOwnerFilter.innerHTML = '<option value="all">All Users</option>';
+                const owners = new Set();
+                outData.forEach(item => {
+                    if (item._ownerId) owners.add(item._ownerId);
+                });
+                USERS.forEach(user => {
+                    if (owners.has(user.id) || user.role === 'admin' || currentUser?.role === 'admin') {
+                        const opt = document.createElement('option');
+                        opt.value = user.id;
+                        opt.textContent = user.display + (user.role === 'admin' ? ' (Admin)' : '');
+                        outOwnerFilter.appendChild(opt);
+                    }
+                });
+            }
+
+            // =============================================================
+            // 7. GOOGLE SHEETS SYNC
             // =============================================================
             async function syncGoogleSheet(showLoading = true) {
+                if (!currentUser) return;
                 const sheetId = GOOGLE_SHEET_ID;
                 if (!sheetId) {
                     showToast('Google Sheet ID not configured.', 'error');
@@ -2032,6 +2376,7 @@
                     applyFiltersAndRender();
                     renderOutLog();
                     updateTabBadges();
+                    populateOwnerFilter();
                     showToast(`Synced ${allData.length} records from Google Sheets.`, 'google-toast');
                     if (showLoading) loadingOverlay.classList.remove('active');
                     refreshBtn.classList.remove('spinning');
@@ -2043,7 +2388,7 @@
             }
 
             // =============================================================
-            // 6. LOCATION RANGE
+            // 8. LOCATION RANGE
             // =============================================================
             function parseLocationRange(input) {
                 if (!input || !input.trim()) return [];
@@ -2095,7 +2440,7 @@
             }
 
             // =============================================================
-            // 7. TOAST
+            // 9. TOAST
             // =============================================================
             let toastTimer = null;
 
@@ -2116,7 +2461,7 @@
             }
 
             // =============================================================
-            // 8. FILTERING & SEARCH
+            // 10. FILTERING & SEARCH
             // =============================================================
             function matchesSearch(row, term) {
                 if (!term) return true;
@@ -2252,7 +2597,7 @@
             }
 
             // =============================================================
-            // 9. SUMMARY
+            // 11. SUMMARY
             // =============================================================
             function updateSummary() {
                 const total = filteredData.length;
@@ -2304,7 +2649,7 @@
             }
 
             // =============================================================
-            // 10. RENDER TABLE
+            // 12. RENDER TABLE
             // =============================================================
             function buildHeader() {
                 if (tableHead.children.length > 0) return;
@@ -2525,7 +2870,7 @@
             }
 
             // =============================================================
-            // 11. HIGHLIGHT
+            // 13. HIGHLIGHT
             // =============================================================
             function toggleHighlightAndUpdate(uid, rowElement) {
                 if (highlightedSet.has(uid)) {
@@ -2601,15 +2946,19 @@
             }
 
             // =============================================================
-            // 12. OUT FUNCTIONALITY
+            // 14. OUT FUNCTIONALITY with Ownership
             // =============================================================
             function performOut() {
+                if (!currentUser) {
+                    showToast('Please log in first.', 'error');
+                    return;
+                }
                 if (selectedUIDs.size === 0) {
                     showToast('No items selected.', 'warning');
                     return;
                 }
 
-                const pickerName = pickerNameInput.value.trim() || 'Picker';
+                const pickerName = currentUser.display;
 
                 const selectedRows = allData.filter(row => selectedUIDs.has(row._uid));
                 if (selectedRows.length === 0) {
@@ -2641,6 +2990,8 @@
                         _outTime: now.time,
                         _outTimestamp: now.full,
                         _outBy: pickerName,
+                        _ownerId: currentUser.id,
+                        _ownerName: currentUser.name,
                         _outId: generateUid()
                     };
                 });
@@ -2653,20 +3004,33 @@
 
                 toOut.forEach(row => selectedUIDs.delete(row._uid));
 
-                showToast(`${toOut.length} item(s) moved to Out Log. Picker: ${pickerName}`, 'out-toast');
+                showToast(`${toOut.length} item(s) moved to Out Log. Owner: ${pickerName}`, 'out-toast');
                 applyFiltersAndRender();
                 renderOutLog();
                 updateTabBadges();
                 updateOutButtonState();
+                populateOwnerFilter();
             }
 
             function restoreFromOut(outId) {
+                if (!currentUser) {
+                    showToast('Please log in first.', 'error');
+                    return;
+                }
                 const index = outData.findIndex(item => item._outId === outId);
                 if (index === -1) {
                     showToast('Item not found in out log.', 'error');
                     return;
                 }
                 const item = outData[index];
+
+                // Check ownership: admin can restore any, others only their own
+                const isOwner = currentUser.role === 'admin' || item._ownerId === currentUser.id;
+                if (!isOwner) {
+                    showToast('You can only restore items you checked out.', 'error');
+                    return;
+                }
+
                 const exists = allData.some(row => row._uid === item._uid);
                 if (!exists) {
                     const newRow = { ...item };
@@ -2674,6 +3038,8 @@
                     delete newRow._outTime;
                     delete newRow._outTimestamp;
                     delete newRow._outBy;
+                    delete newRow._ownerId;
+                    delete newRow._ownerName;
                     delete newRow._outId;
                     allData.push(newRow);
                 }
@@ -2682,12 +3048,13 @@
                 applyFiltersAndRender();
                 renderOutLog();
                 updateTabBadges();
+                populateOwnerFilter();
                 showToast(`Restored item: ${item['Pallet Serial'] || item['Model Number'] || 'item'}`, 'success');
             }
 
             function updateOutButtonState() {
                 const count = selectedUIDs.size;
-                outBtn.disabled = count === 0;
+                outBtn.disabled = count === 0 || !currentUser;
                 if (count > 0) {
                     outCountBadge.textContent = count;
                     outCountBadge.style.display = 'inline';
@@ -2698,7 +3065,7 @@
             }
 
             // =============================================================
-            // 13. OUT LOG PERSISTENCE
+            // 15. OUT LOG PERSISTENCE
             // =============================================================
             function saveOutLog() {
                 try {
@@ -2714,15 +3081,22 @@
             }
 
             // =============================================================
-            // 14. RENDER OUT LOG
+            // 16. RENDER OUT LOG with Ownership
             // =============================================================
             function renderOutLog() {
-                const total = outData.length;
+                let filteredOut = outData;
+
+                // Filter by owner
+                if (outFilterOwner !== 'all') {
+                    filteredOut = filteredOut.filter(item => item._ownerId === outFilterOwner);
+                }
+
+                const total = filteredOut.length;
                 const totalPages = Math.max(1, Math.ceil(total / outPageSize));
                 if (outCurrentPage > totalPages) outCurrentPage = totalPages;
                 const start = (outCurrentPage - 1) * outPageSize;
                 const end = Math.min(start + outPageSize, total);
-                const pageData = outData.slice(start, end);
+                const pageData = filteredOut.slice(start, end);
 
                 while (outLogBody.firstChild) {
                     outLogBody.removeChild(outLogBody.firstChild);
@@ -2740,11 +3114,12 @@
                         '<polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/>';
                     td.appendChild(icon);
                     const p = document.createElement('p');
-                    p.textContent = 'No items have been checked out yet.';
+                    p.textContent = outFilterOwner !== 'all' ? 'No items from this user.' : 'No items have been checked out yet.';
                     td.appendChild(p);
                     const sub = document.createElement('div');
                     sub.className = 'sub';
-                    sub.textContent = 'Select items in Inventory and click "Out".';
+                    sub.textContent = outFilterOwner !== 'all' ? 'Select a different user or view all.' :
+                        'Select items in Inventory and click "Out".';
                     td.appendChild(sub);
                     tr.appendChild(td);
                     outLogBody.appendChild(tr);
@@ -2752,6 +3127,10 @@
                     pageData.forEach((row, idx) => {
                         const tr = document.createElement('tr');
                         const globalIdx = (outCurrentPage - 1) * outPageSize + idx + 1;
+
+                        const ownerName = row._ownerName || row._outBy || 'Unknown';
+                        const isOwner = currentUser && (currentUser.role === 'admin' || row._ownerId === currentUser
+                        .id);
 
                         const cells = [
                             globalIdx,
@@ -2761,7 +3140,7 @@
                             escapeText(row['Location'] || ''),
                             escapeText(row._outDate || ''),
                             escapeText(row._outTime || ''),
-                            escapeText(row._outBy || '')
+                            escapeText(ownerName)
                         ];
 
                         cells.forEach(val => {
@@ -2774,11 +3153,18 @@
                         td.style.textAlign = 'center';
                         const btn = document.createElement('button');
                         btn.className = 'restore-btn';
-                        btn.textContent = '↩ Restore';
-                        btn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            restoreFromOut(row._outId);
-                        });
+                        if (isOwner) {
+                            btn.classList.add('owner-btn');
+                            btn.textContent = '↩ Restore';
+                            btn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                restoreFromOut(row._outId);
+                            });
+                        } else {
+                            btn.classList.add('other-btn');
+                            btn.textContent = '🔒 Locked';
+                            btn.title = 'Only the owner or admin can restore this item';
+                        }
                         td.appendChild(btn);
                         tr.appendChild(td);
 
@@ -2790,14 +3176,14 @@
                     outItems = 0,
                     outValuation = 0;
                 const outModelSet = new Set();
-                outData.forEach(row => {
+                filteredOut.forEach(row => {
                     outBoxes += parseNumber(row['Boxes']);
                     outItems += parseNumber(row['Total Items']);
                     outValuation += parseNumber(row['Valuation']);
                     const m = normalize(row['Model Number']);
                     if (m) outModelSet.add(m);
                 });
-                setSafeText(outTotalCount, outData.length);
+                setSafeText(outTotalCount, filteredOut.length);
                 setSafeText(outBoxesTotal, outBoxes.toLocaleString());
                 setSafeText(outItemsTotal, outItems.toLocaleString());
                 setSafeText(outValuationTotal, outValuation.toLocaleString(undefined, { minimumFractionDigits: 2,
@@ -2810,15 +3196,16 @@
                 outPageNext.disabled = outCurrentPage >= totalPages;
 
                 outTabBadge.textContent = outData.length;
+                populateOwnerFilter();
             }
 
             // =============================================================
-            // 15. TABS
+            // 17. TABS
             // =============================================================
             function switchTab(tab) {
                 const isInventory = tab === 'inventory';
-                tabContentInventory.classList.toggle('active', isInventory);
-                tabContentOutLog.classList.toggle('active', !isInventory);
+                tabContentInventory.style.display = isInventory ? 'flex' : 'none';
+                tabContentOutLog.style.display = isInventory ? 'none' : 'flex';
                 tabInventory.classList.toggle('active', isInventory);
                 tabOutLog.classList.toggle('active', !isInventory);
                 if (!isInventory) renderOutLog();
@@ -2832,7 +3219,7 @@
             }
 
             // =============================================================
-            // 16. EXPORT - Full Reporting
+            // 18. EXPORT - Full Reporting
             // =============================================================
             function exportData(format) {
                 let dataToExport = [];
@@ -2864,7 +3251,6 @@
                         }
                         break;
                     case 'summary':
-                        // Summary Log - aggregated by model
                         const summaryData = [];
                         const modelMap = {};
                         const allItems = allData.filter(row => {
@@ -2890,7 +3276,6 @@
                                 'Locations': Array.from(m.locations).join(', ')
                             });
                         });
-                        // Add summary totals
                         let totalBoxes = 0,
                             totalItems = 0,
                             totalValuation = 0;
@@ -2915,7 +3300,6 @@
                         }
                         break;
                     case 'print':
-                        // Print current view
                         const win = window.open('', '_blank');
                         if (!win) {
                             showToast('Please allow popups for printing.', 'error');
@@ -2969,11 +3353,9 @@
                     return;
                 }
 
-                // Build export rows
                 const exportRows = dataToExport.map((row, idx) => {
                     const obj = {};
                     if (format === 'summary') {
-                        // Summary already has proper keys
                         Object.keys(row).forEach(key => {
                             obj[key] = row[key];
                         });
@@ -2987,11 +3369,10 @@
                         obj['Location'] = escapeText(row['Location'] || '');
                         obj['Out Date'] = escapeText(row._outDate || '');
                         obj['Out Time'] = escapeText(row._outTime || '');
-                        obj['Picker'] = escapeText(row._outBy || '');
+                        obj['Owner'] = escapeText(row._ownerName || row._outBy || 'Unknown');
                         obj['Valuation'] = parseNumber(row['Valuation']).toFixed(2);
                         return obj;
                     }
-                    // Inventory or Highlighted
                     DISPLAY_COLUMNS.forEach(col => {
                         if (col === '#') return;
                         const label = HEADER_LABELS[col] || col;
@@ -3021,7 +3402,7 @@
             }
 
             // =============================================================
-            // 17. CLEAR FILTERS
+            // 19. CLEAR FILTERS
             // =============================================================
             function clearFilterInputs() {
                 filterLocation.value = '';
@@ -3042,7 +3423,7 @@
             }
 
             // =============================================================
-            // 18. DEBOUNCE
+            // 20. DEBOUNCE
             // =============================================================
             function debounce(fn, ms) {
                 let timer;
@@ -3053,14 +3434,41 @@
             }
 
             // =============================================================
-            // 19. INIT
+            // 21. INIT
             // =============================================================
             function init() {
                 loadOutLog();
+                renderLoginScreen();
 
+                // Check if user was previously logged in (session)
+                const savedUser = sessionStorage.getItem('warehouse_current_user');
+                if (savedUser) {
+                    const user = USERS.find(u => u.id === savedUser);
+                    if (user) {
+                        loginUser(user.id);
+                        return;
+                    }
+                }
+
+                // Show login
+                loginOverlay.classList.remove('hidden');
+
+                // Event listeners
                 refreshBtn.addEventListener('click', function() {
-                    syncGoogleSheet(true);
+                    if (currentUser) syncGoogleSheet(true);
                 });
+
+                logoutBtn.addEventListener('click', function() {
+                    sessionStorage.removeItem('warehouse_current_user');
+                    logoutUser();
+                });
+
+                // Save session on login
+                const origLogin = loginUser;
+                loginUser = function(userId) {
+                    origLogin(userId);
+                    sessionStorage.setItem('warehouse_current_user', userId);
+                };
 
                 searchInput.addEventListener('input', debounce(() => {
                     currentPage = 1;
@@ -3141,6 +3549,12 @@
                     renderOutLog();
                 });
 
+                outOwnerFilter.addEventListener('change', function() {
+                    outFilterOwner = this.value;
+                    outCurrentPage = 1;
+                    renderOutLog();
+                });
+
                 outBtn.addEventListener('click', performOut);
 
                 tabInventory.addEventListener('click', () => switchTab('inventory'));
@@ -3177,18 +3591,14 @@
                     }
                 });
 
-                // Drag and drop removed (import removed)
+                // Fix login function override
+                const loginFn = loginUser;
+                loginUser = function(userId) {
+                    loginFn(userId);
+                    sessionStorage.setItem('warehouse_current_user', userId);
+                };
 
-                const savedPicker = localStorage.getItem('warehouse_picker_name');
-                if (savedPicker) pickerNameInput.value = savedPicker;
-                pickerNameInput.addEventListener('change', function() {
-                    localStorage.setItem('warehouse_picker_name', this.value);
-                });
-
-                // Initial sync on load
-                syncGoogleSheet(true);
-
-                console.log('🏭 Warehouse Inventory v9.0 · Full Reporting · No Import');
+                console.log('🏭 Warehouse Inventory v10.0 · Full User System');
             }
 
             if (document.readyState === 'loading') {
